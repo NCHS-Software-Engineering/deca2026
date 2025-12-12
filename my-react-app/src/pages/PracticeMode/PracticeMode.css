@@ -1,0 +1,255 @@
+.Event-Title {
+  text-align: center;
+}
+
+.Flash-Card-Body {
+  display: flex;
+  flex-direction: column;
+  width: calc(50% - 40px);
+  margin: 60px auto;
+  margin-bottom: 40px;
+  position: relative;
+  min-height: 500px;
+  border-radius: 20px;
+  padding: 20px;
+  cursor: pointer; /* Add this to show it's clickable */
+  transition: 0.5s;
+  text-align: center; /* Ensures inline text inside children is centered */
+}
+
+.Flash-Card-Body h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+  color: white;
+  min-height: 390px;
+  display: flex;
+  align-items: center; /* Center vertically */
+  justify-content:center;/* Center horizontally */
+  text-align:center;
+  width: 100%; /* Ensures it spans the full width of the container */
+}
+
+
+.Flash-Card-Body p {
+  font-size: 18px;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.flash-card-buttons {
+  display: flex;
+  justify-content: space-between; /* Puts buttons on opposite sides */
+}
+
+.selector-box {
+  width: 16.666666666666666%;
+  min-height: 140px;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer; /* Add this to show it's clickable */
+  transition: 0.5s; /* Optional: for hover effect */
+}
+
+.selector-box:hover {
+  filter: brightness(1.2);
+  color: black;
+}
+
+.selector-box h3 {
+  text-align: center;
+  padding: 20px 10px;
+  width: 100%;
+  margin: 0;
+  font-size: 1.1em;
+  color: var(--Text-Inverted);
+  min-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flash-card-counter {
+  display: flex;
+  text-align: center;
+  height: 60px;
+  justify-content: center;
+}
+
+.flash-card-counter h3 {
+  font-size:1.1em;
+  color: var(--Text-Inverted)
+}
+
+
+
+.flash-card-button {
+  display: flex;
+  text-align: center;
+  height: 60px;
+  border-radius: 20px;
+  max-width: 160px;
+  cursor: pointer;
+  transition: 0.15s;
+  background-color: var(--Primary);
+  border: solid var(--Primary);
+  min-width: 100px;
+}
+
+.flash-card-button.next {
+  justify-self: end;
+}
+
+.flash-card-button.previous {
+  justify-self: start;
+}
+
+.flash-card-button.blank {
+  justify-self: end;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.flash-card-button.restart-below {
+  justify-self: start;
+  margin: 10px auto;
+  transition: 0.2s;
+  color: var(--Primary);
+  height: 40px;
+  width: 130px;
+  background-color: rgb(220, 220, 220);
+  border-color: rgb(220, 220, 220);
+}
+.flash-card-button.restart-below:hover{
+  border-color: var(--Primary)
+}
+.flash-card-button.restart-below h3{
+  color: var(--Primary);
+}
+
+.random-toggle-button {
+  justify-self: start;
+  margin: 10px auto;
+  transition: 0.2s;
+  height: 40px;
+  width: 130px;
+  border-radius: 20px;
+  border-width: 3px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  background-color: red;
+  border: solid red;
+}
+
+.random-toggle-button.active {
+  background-color: green;
+  border: solid green;
+}
+
+.random-toggle-button:hover {
+  filter: brightness(1.1);
+  border-color: white;
+}
+
+
+
+.flash-card-button:hover{
+  border: solid white;
+}
+
+
+.flash-card-button h3 {
+  color: var(--Text-Inverted);
+  margin:auto;
+}
+
+.know-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #28a745;
+  color: white;
+  border: 2px solid transparent; /* Add transparent border initially */
+  padding: 20px 20px;
+  border-radius: 20px;
+  border-width: 3px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  z-index: 2;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.know-button:hover {
+  border-color: white; /* Fade in white border on hover */
+}
+
+.return-known-button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: #28a745;
+  color: white;
+  border: 2px solid transparent;
+  padding: 20px 20px;
+  border-radius: 20px;
+  border-width: 3px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  z-index: 2;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.return-known-button:hover {
+  border-color: white;
+}
+
+
+@media screen and (max-width: 768px) {
+  .Flash-Card-Body {
+    width: 90%;
+    min-height: 400px;
+    padding: 16px;
+    margin: 40px auto;
+    border-radius: 16px;
+  }
+
+  .Flash-Card-Body h2 {
+    font-size: 18px;
+    min-height: 250px;
+    padding: 0 10px;
+  }
+
+  .know-button,
+  .return-known-button {
+    padding: 12px 16px;
+    font-size: 0.9rem;
+    border-radius: 14px;
+  }
+
+  .flash-card-button,
+  .random-toggle-button,
+  .flash-card-button.restart-below {
+    height: 40px;
+    width: 100%;
+    max-width: 200px;
+    font-size: 1rem;
+    margin: 8px auto;
+  }
+
+  .flash-card-buttons {
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .flash-card-counter h3 {
+    font-size: 1rem;
+  }
+}

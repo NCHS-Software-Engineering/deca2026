@@ -1,0 +1,24 @@
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(
+  <GoogleOAuthProvider clientId="792027981328-l729q6v1bugs78mp18h64drp1ief9n0e.apps.googleusercontent.com">
+      <React.StrictMode>
+      
+          <App />
+      </React.StrictMode>
+  </GoogleOAuthProvider>
+
+);
+
+
+  replace the 
+  
+  const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(
+  <React.StrictMode>
+    <RouterProvider router={router} />
+  </React.StrictMode>
+ 
+
+
+with the above code for the google login 

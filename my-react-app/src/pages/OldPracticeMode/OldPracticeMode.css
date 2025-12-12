@@ -1,0 +1,9 @@
+.button_container {
+    align-items: center;
+    color: #61dafb;
+    font-size: inherit;
+    border: 10px;
+    background-color: transparent;
+    cursor: pointer;
+    width: 100%;
+  }

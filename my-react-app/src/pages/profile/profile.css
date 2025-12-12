@@ -1,0 +1,65 @@
+.Welcome {
+  text-align: center;
+
+}
+
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 50vh;
+  }
+  
+  .google-login-button {
+    margin-top: 20px;
+  }
+  
+  .profile-info {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+    color: rgb(0, 0, 0);
+    font-family: 'Maven Pro', normal;
+  }
+  
+  
+  .profile-info h2 {
+    margin-bottom: 10px;
+    color: rgb(0, 0, 0);
+    font-family: 'Maven Pro', normal;
+  }
+  
+  .profile-info p {
+    margin-bottom: 20px;
+  }
+
+
+
+  .profile-info button {
+    border: 1px solid rgb(44, 112, 204);
+    padding: 5px 10px;
+    margin: 25px 10px 100px;
+    font-family: 'Maven Pro', normal;
+    color: rgb(44, 112, 204);
+    background-color: rgb(255, 255, 255);
+    font-size: 20px;
+    transition: 0.2s;
+  }
+  .profile-info button:hover {
+    border: 1px solid rgb(255, 255, 255);
+    padding: 5px 10px;
+    margin: 25px 10px 100px;
+    font-family: 'Maven Pro', normal;
+    color: rgb(255, 255, 255);
+    background-color: rgb(44, 112, 204);;
+    font-size: 20px;
+  }
+  
+  .Titles {
+    margin: 25px 10px 0;
+    text-align: left;
+    color:rgb(0, 0, 0);
+    font-size: 17px;
+  }

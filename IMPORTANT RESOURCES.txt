@@ -1,0 +1,18 @@
+Below are sources currently being used: 
+
+--> Dynamic image rendering with react router: https://forum.freecodecamp.org/t/dynamic-image-rendering-with-react-router/413969
+--> react router dom with images: https://stackoverflow.com/questions/57114044/how-to-add-a-route-to-image-in-react-js
+--> react router dom with buttons tutorial: https://www.shecodes.io/athena/40645-how-to-create-a-button-component-that-is-a-link-with-react-router#:~:text=To%20create%20a%20button%20that,from%20react%2Drouter%2Ddom%20.&text=In%20the%20code%20above%2C%20we,to%20specify%20the%20button%20text.
+
+
+below are sources previously used--------------------------------------------------------
+
+--> multipage website tutorial: https://www.geeksforgeeks.org/how-to-create-a-multi-page-website-using-react-js/ 
+--> multilevel dropdown menu: https://blog.logrocket.com/how-create-multilevel-dropdown-menu-react/ 
+
+unused sources:---------------------------------------------------------------------------------
+
+--> dropdown with routerdom tutorial: https://dev.to/cooljasonmelton/build-this-cool-dropdown-menu-with-react-react-router-and-css-39ln 
+--> multilevel extended dropdown tutorial: https://mdbootstrap.com/docs/react/extended/dropdown-multilevel/ 
+--> react bootstrap tutorial: https://www.geeksforgeeks.org/how-to-create-a-multi-level-dropdown-navbar-in-react-bootstrap-using-map/ 
+--> react bootstrap dropdown: https://react-bootstrap.netlify.app/docs/components/dropdowns/

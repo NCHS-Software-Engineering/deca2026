@@ -1,0 +1,360 @@
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden; 
+  scroll-behavior: smooth;
+}
+
+.scroll-to-top {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  cursor: pointer;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.scroll-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+  transition: all 0.3s ease;
+}
+
+.scroll-to-top img {
+  width: 50px; /* Adjust size as needed */
+  height: 50px;
+}
+
+.right-square {
+  width: 50%;
+  background-color: transparent;
+  border-top-right-radius: 50px;
+  border-bottom-right-radius: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* This will crop the image */
+  position: relative; /* For absolute positioning of image */
+}
+
+.square-image {
+  position: absolute; /* Takes image out of flow */
+  width: 100%;
+  height: 500px;
+  object-fit: cover; /* This will make image cover the space */
+  object-position: center; /* Centers the image */
+}
+
+
+
+.squares-container {
+  display: flex;
+  padding: 20px 0px;
+  width: calc(70% - 40px);
+  justify-content: space-between;
+  margin: 0 auto;
+  position: relative;
+  min-height: 500px;
+}
+
+/* Left square specific styles */
+.left-square {
+  width: 50%;
+  height: 500px;
+  background-color: var(--Primary);
+  border-radius: 0px;
+  border-top-left-radius: 50px;
+  border-bottom-left-radius: 50px;
+  margin: 0px;
+  padding: 20px;
+  font-family: 'Maven Pro', normal;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
+  
+}
+
+.left-square h2 {
+  margin-bottom: 50px;
+  margin-top: 20px;
+  width: 90%;
+  height: 50px;
+  font-size: 40px;
+  color: rgb(255, 255, 255);
+  font-family: 'Maven Pro', normal;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+}
+
+.left-square p {
+  text-align: left;
+  width: 90%;
+  height: 600px;
+  color: rgb(255, 255, 255);
+  font-family: 'Maven Pro', normal;
+  font-size: 20px;
+  line-height: 40px;
+  height: 300px; /* Reduced from 600px */
+}
+
+
+
+/* Selector styles */
+.content-section {
+  min-height: 100vh;
+  padding: 40px;
+  margin: 0 auto;
+  width: calc(70% - 40px);
+}
+
+
+.selector-container {
+  display: flex;
+  justify-content: center; /* Changed from space-between */
+  width: calc(70% - 40px);
+  padding: 0;
+  margin: 50px auto 0 auto; /* Keep this to maintain left spacing */
+  position: relative;
+  left: 0;
+  gap: 0px; /* Small gap between boxes */
+  overflow-x: hidden;
+  overflow: hidden; /* Add this */
+}
+
+.selector-box {
+  flex: 1;
+  min-width: 120px;
+  min-height: 140px;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer; /* Add this to show it's clickable */
+  transition: 0.5s; /* Optional: for hover effect */
+  
+  border: none;
+}
+
+.selector-box:hover {
+  filter: brightness(1.2);
+  color: black;
+}
+
+.content-section {
+  min-height: 100vh; /* Full viewport height for each section */
+  padding: 40px;
+  margin: 0 auto;
+  width: calc(70% - 40px); /* Match container width */
+}
+
+.names-2025 {
+  display: flex;
+  padding: 20px 5px;
+  width: calc(70% - 40px);
+  justify-content: space-between; 
+  margin: 0 auto;
+  position: relative;
+}
+
+.names-2025 h4 {
+  color: var(--Primary);
+  text-align: center;
+  font-size: 15px;
+  font-family: 'Maven Pro', normal;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 45px;
+}
+
+.selector-box h3 {
+  text-align: center;
+  padding: 20px 10px;
+  width: 100%;
+  margin: 0;
+  font-size: 1.1em;
+  color: white;
+  min-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.examples {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.examples div {
+  padding: 15px 10px;
+  cursor: pointer;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Category Colors */
+.business {
+  background-color: var(--Color-Business);
+}
+
+.entrepreneurship {
+  background-color: var(--Color-Entrepreneurship);
+}
+
+.finance {
+  background-color: var(--Color-Finance);
+}
+
+.hospitality {
+  background-color: var(--Color-Hospitality);
+}
+
+.marketing {
+  background-color: var(--Color-Marketing);
+}
+
+.personal-finance {
+  background-color: var(--Color-Personal-Finance);
+}
+ 
+.examples div:hover {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Removed responsive design to match fixed layout */
+
+
+
+.password-lock-container {
+  max-width: 400px;
+  margin: 100px auto;
+  padding: 40px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.password-lock-container input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.password-lock-container button {
+  padding: 10px 20px;
+  background-color: var(--Primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.password-lock-container button:hover {
+  background-color: #0056b3;
+}
+
+@media screen and (max-width: 768px) {
+  .selector-container {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .selector-box {
+    width: 100%;
+    max-width: 400px;
+    min-width:300px;
+    min-height: 100px;
+    margin: 0 auto;
+  }
+  
+
+  .selector-box h3 {
+    min-height: 60px; /* Adjust header height for mobile */
+  }
+
+  /* Adjust squares for mobile too */
+  .squares-container {
+    flex-direction: column;
+    width: calc(100% - 40px);
+  }
+
+  .left-square, .right-square {
+    width: 100%;
+    margin: 10px 0;
+  }
+}
+/* Add these media queries at the bottom of your file */
+@media screen and (max-width: 768px) {
+  .squares-container {
+    flex-direction: column;
+    width: 100%;
+    padding: 10px;
+  }
+
+  .left-square, .right-square {
+    width: 100%;
+    height: auto;
+    border-radius: 0;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    padding: 20px;
+  }
+
+  
+  .square-image {
+    position: relative; /* REMOVE absolute positioning */
+    height: auto;        /* Let it resize naturally */
+    width: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+
+
+
+  .left-square h2 {
+    font-size: 28px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+  }
+
+  .left-square p {
+    font-size: 16px;
+    line-height: 28px;
+    height: auto;
+  }
+
+  .selector-container {
+    flex-direction: column;
+    width: 100%;
+    padding: 10px;
+    gap: 15px;
+  }
+
+  .selector-box {
+    width: 100%;
+    min-height: 100px;
+  }
+
+  .selector-box h3 {
+    font-size: 1rem;
+    padding: 15px;
+    line-height: 1.4;
+  }
+}
