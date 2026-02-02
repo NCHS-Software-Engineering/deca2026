@@ -132,7 +132,8 @@ function Home() {
       </div>
 
       <div className = "names-2025">
-          <h4>Henry Allman '25, Bijoux Stilson '26, Robbie Ruthig '26</h4>
+          <h4>2024-2025 Dev Team: Henry Allman '25, Bijoux Stilson '26, Robbie Ruthig '26</h4>
+          <h4>2025-2026 Dev Team: Shriya Kunnanath '26, Nimai Nagireddy '27, Jonathan Yuan '26</h4>
       </div>
 
 

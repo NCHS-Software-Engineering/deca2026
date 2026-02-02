@@ -131,7 +131,7 @@ body {
   flex: 1;
   min-width: 120px;
   min-height: 140px;
-  border-radius: 0;
+  border-radius: 12px;
   padding: 0;
   margin: 0;
   cursor: pointer; /* Add this to show it's clickable */
@@ -162,7 +162,7 @@ body {
 }
 
 .names-2025 h4 {
-  color: var(--Primary);
+  color: #FFFFFF;
   text-align: center;
   font-size: 15px;
   font-family: 'Maven Pro', normal;
