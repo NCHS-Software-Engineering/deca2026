@@ -162,7 +162,7 @@ body {
 }
 
 .names-2025 h4 {
-  color: var(--Primary);
+  color: #ffffff; /* changed to white for founders' names */
   text-align: center;
   font-size: 15px;
   font-family: 'Maven Pro', normal;
