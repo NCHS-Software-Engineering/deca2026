@@ -36,3 +36,4 @@ replay_pid*
 .env
 
 .vscode/settings.json
+my-react-app/.env.local
