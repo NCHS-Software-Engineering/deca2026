@@ -22,7 +22,8 @@ Instructions to run the app:
 4. In terminal one enter: cd Server
 5. In terminal one enter: nodemon server.js or node sever.js
 6. In terminal two enter: cd my-react-app
-7. In terminal two enter: npm run
+7. In terminal two enter: npm run 
+(note for 7): use "npm run start" (no quotes) instead 
 Note: If every step works correctly it should open up a tab in google automatically called localhost:3000
 Note: To stop running either the server click on the corresponding terminal and hit ctrl+c
 
