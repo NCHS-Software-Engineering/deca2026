@@ -17,7 +17,7 @@ Note: It is highly reccomended that you use nodemon over node as nodemon will au
 
 Instructions to run the app:
 1. Open up two seperate terminals
-2. In termnal one enter: cd my-react-app
+2. In terminal one enter: cd my-react-app
 3. In terminal one enter: cd src
 4. In terminal one enter: cd Server
 5. In terminal one enter: nodemon server.js or node sever.js
