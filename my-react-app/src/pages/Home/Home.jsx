@@ -106,7 +106,7 @@ function Home() {
       </div>
       
       <div className="selector-container">
-        <button className="selector-box business" onClick={() => handleClick("Business Management and Administration", "var(--Color-Business)", "Business")}>
+        <button className="selector-box-left-end business" onClick={() => handleClick("Business Management and Administration", "var(--Color-Business)", "Business")}>
           <h3>Business Management & Administration</h3>
         </button>
 
@@ -126,7 +126,7 @@ function Home() {
           <h3>Marketing</h3>
         </button>
 
-        <button className="selector-box personal-finance" onClick={() => handleClick("Personal Financial Literacy", "var(--Color-Personal-Finance)", "FinancialLiteracy")}>
+        <button className="selector-box-right-end personal-finance" onClick={() => handleClick("Personal Financial Literacy", "var(--Color-Personal-Finance)", "FinancialLiteracy")}>
           <h3>Personal Financial Literacy</h3>
         </button>
       </div>
