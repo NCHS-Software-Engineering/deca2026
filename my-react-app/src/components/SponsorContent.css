@@ -1,0 +1,41 @@
+.sponsor-restricted {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  padding: 20px;
+}
+
+.restriction-notice {
+  text-align: center;
+  padding: 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+  color: white;
+  max-width: 500px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.restriction-icon {
+  display: block;
+  font-size: 64px;
+  margin-bottom: 20px;
+}
+
+.restriction-notice h3 {
+  margin: 15px 0 10px;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.restriction-notice p {
+  margin: 10px 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.restriction-note {
+  margin-top: 20px;
+  font-size: 14px;
+  opacity: 0.9;
+}

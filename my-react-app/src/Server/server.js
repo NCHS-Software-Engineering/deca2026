@@ -190,12 +190,34 @@ app.get("/api/get-stats", async (req, res) => {
   }
 });
 
+/**
+ * Determine user role based on email domain
+ * @param {string} email - User's email address
+ * @returns {string} Role: 'student', 'teacher', or 'sponsor'
+ */
+function determineRoleFromEmail(email) {
+  // Check if email ends with student domain
+  if (email.endsWith("@stu.naperville203.org")) {
+    return "student";
+  }
+  // Check if email ends with teacher/staff domain
+  if (email.endsWith("@naperville203.org")) {
+    return "teacher";
+  }
+  // Default to student for external emails
+  return "student";
+}
+
 app.post('/api/login', async (req, res) => {
   try {
-    const { googleId, name, email, pictureUrl, role } = req.body;
+    const { googleId, name, email, pictureUrl } = req.body;
     if (!googleId || !email || !name) {
       return res.status(400).json({ error: "Missing required user fields" });
     }
+
+    // Determine role based on email domain
+    const role = determineRoleFromEmail(email);
+    console.log(`User login: ${email} assigned role: ${role}`);
 
     const sql = `
       INSERT INTO Users (google_id, name, email, picture_url, role)
@@ -246,6 +268,209 @@ app.post('/api/password', async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+// ===== SPONSOR/ROLE MANAGEMENT ENDPOINTS =====
+
+/**
+ * Check if user is a sponsor
+ */
+app.get('/api/user/is-sponsor', async (req, res) => {
+  try {
+    const { googleId } = req.query;
+    if (!googleId) {
+      return res.status(400).json({ error: 'googleId required' });
+    }
+
+    const sql = `SELECT role FROM Users WHERE google_id = ?`;
+    const [results] = await pool.query(sql, [googleId]);
+    
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const isSponsor = results[0].role === 'sponsor';
+    res.json({ isSponsor, role: results[0].role });
+  } catch (err) {
+    console.error("Error checking sponsor status:", err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+/**
+ * Get user role and features
+ */
+app.get('/api/user/role', async (req, res) => {
+  try {
+    const { googleId } = req.query;
+    if (!googleId) {
+      return res.status(400).json({ error: 'googleId required' });
+    }
+
+    const sql = `SELECT google_id, name, email, role FROM Users WHERE google_id = ?`;
+    const [results] = await pool.query(sql, [googleId]);
+    
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const user = results[0];
+    const roleFeatures = getRoleFeatures(user.role);
+    
+    res.json({ 
+      ...user, 
+      features: roleFeatures 
+    });
+  } catch (err) {
+    console.error("Error fetching user role:", err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+/**
+ * Update user role (admin only - in production, verify admin status)
+ */
+app.post('/api/user/update-role', async (req, res) => {
+  try {
+    const { googleId, newRole } = req.body;
+    
+    if (!googleId || !newRole) {
+      return res.status(400).json({ error: 'googleId and newRole required' });
+    }
+
+    const validRoles = ['sponsor', 'teacher', 'student'];
+    if (!validRoles.includes(newRole)) {
+      return res.status(400).json({ error: 'Invalid role' });
+    }
+
+    // In production, verify that the requester is an admin/sponsor
+    const sql = `UPDATE Users SET role = ? WHERE google_id = ?`;
+    const [result] = await pool.query(sql, [newRole, googleId]);
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Fetch updated user
+    const fetchSql = `SELECT * FROM Users WHERE google_id = ?`;
+    const [updatedUser] = await pool.query(fetchSql, [googleId]);
+    
+    res.json({ 
+      message: "User role updated successfully", 
+      user: updatedUser[0] 
+    });
+  } catch (err) {
+    console.error("Error updating user role:", err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+/**
+ * Get sponsor-only restricted data
+ */
+app.get('/api/sponsor/restricted-content', async (req, res) => {
+  try {
+    const { googleId } = req.query;
+    
+    if (!googleId) {
+      return res.status(400).json({ error: 'googleId required' });
+    }
+
+    // Check if user is sponsor
+    const checkSql = `SELECT role FROM Users WHERE google_id = ?`;
+    const [userResults] = await pool.query(checkSql, [googleId]);
+    
+    if (userResults.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (userResults[0].role !== 'sponsor') {
+      return res.status(403).json({ error: 'Access denied. Sponsor account required.' });
+    }
+
+    // Return sponsor-only data
+    const sponsorData = {
+      message: "Sponsor restricted content",
+      accessLevel: "sponsor",
+      restrictedFeatures: {
+        advancedAnalytics: true,
+        userManagement: true,
+        dataExport: true,
+        piEditing: true,
+        customReports: true
+      },
+      timestamp: new Date()
+    };
+
+    res.json(sponsorData);
+  } catch (err) {
+    console.error("Error fetching sponsor content:", err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+/**
+ * Get all users (sponsor/admin only)
+ */
+app.get('/api/sponsor/all-users', async (req, res) => {
+  try {
+    const { googleId } = req.query;
+    
+    if (!googleId) {
+      return res.status(400).json({ error: 'googleId required' });
+    }
+
+    // Check if requester is sponsor
+    const checkSql = `SELECT role FROM Users WHERE google_id = ?`;
+    const [requesterResults] = await pool.query(checkSql, [googleId]);
+    
+    if (requesterResults.length === 0 || requesterResults[0].role !== 'sponsor') {
+      return res.status(403).json({ error: 'Access denied. Sponsor account required.' });
+    }
+
+    // Return all users (exclude sensitive data)
+    const sql = `SELECT google_id, name, email, role, picture_url FROM Users ORDER BY name`;
+    const [allUsers] = await pool.query(sql);
+    
+    res.json({ users: allUsers, count: allUsers.length });
+  } catch (err) {
+    console.error("Error fetching all users:", err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Helper function to get role features
+function getRoleFeatures(role) {
+  const features = {
+    'sponsor': {
+      name: 'Sponsor Account',
+      canViewRestrictedContent: true,
+      canAccessAnalytics: true,
+      canManageUsers: true,
+      canEditPIs: true,
+      canViewTeacherDashboard: true,
+      canExportData: true
+    },
+    'teacher': {
+      name: 'Teacher Account',
+      canViewRestrictedContent: false,
+      canAccessAnalytics: true,
+      canManageUsers: true,
+      canEditPIs: true,
+      canViewTeacherDashboard: true,
+      canExportData: false
+    },
+    'student': {
+      name: 'Student Account',
+      canViewRestrictedContent: false,
+      canAccessAnalytics: false,
+      canManageUsers: false,
+      canEditPIs: false,
+      canViewTeacherDashboard: false,
+      canExportData: false
+    }
+  };
+  return features[role] || features['student'];
+}
 
 const path = require('path');
 
