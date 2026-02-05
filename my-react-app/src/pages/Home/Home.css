@@ -165,9 +165,12 @@ body {
   border: none;
 }
 
-.selector-box:hover {
+.selector-box:hover, .selector-box-left-end:hover, .selector-box-right-end:hover {
   filter: brightness(1.2);
-  color: black;
+  h3 {
+    color: #d8d8d8; /* makes it a bit easier on the eyes especially for business and financial literacy*/
+    transition: 0.5s;
+  }
 }
 
 .content-section {
@@ -197,7 +200,7 @@ body {
   min-height: 45px;
 }
 
-.selector-box h3 {
+.selector-box h3, .selector-box-left-end h3, .selector-box-right-end h3 {
   text-align: center;
   padding: 20px 10px;
   width: 100%;
