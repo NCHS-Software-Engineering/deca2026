@@ -228,13 +228,32 @@
       margin-right: 20px; /* Add some spacing from the right edge */
       display: flex;
       align-items: center;
-      gap: 8px; /* space between role text and image */
-}
+      gap: 12px; /* space between text and image */
+  }
+
+  .profile-info-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
 
   .profile-role {
     font-size: 14px;
     color: #212529; /* matches header text color */
     text-transform: capitalize;
+  }
+
+  .profile-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #212529;
+  }
+
+  .profile-circle {
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
   }
 
 

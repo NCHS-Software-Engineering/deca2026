@@ -7,6 +7,7 @@ import ProfileImage from '../../images/ProfileImageFile.webp';
 
 const Header = () => {
   const [role, setRole] = useState('');
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
     try {
@@ -14,6 +15,7 @@ const Header = () => {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && parsed.role) setRole(parsed.role);
+        if (parsed && parsed.name) setUserName(parsed.name);
       }
     } catch (e) {
       // ignore
@@ -34,8 +36,11 @@ const Header = () => {
         <MobileNav />
 
         <Link to="profile" className="profile-button">
-          {role && <span className="profile-role">{role}</span>}
-          <img src={ProfileImage} width="60" height="60" alt="Profile Button" />
+          <div className="profile-info-section">
+            {role && <span className="profile-role">{role}</span>}
+            {userName && <span className="profile-name">{userName}</span>}
+          </div>
+          <img src={ProfileImage} width="60" height="60" alt="Profile Button" className="profile-circle" />
         </Link>
 
       </div>
