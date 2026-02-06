@@ -1,6 +1,9 @@
 .Welcome {
   text-align: center;
+}
 
+.Welcome h1 {
+  color: rgb(255, 255, 255) !important;
 }
 
 .login-container {
@@ -20,14 +23,14 @@
     max-width: 600px;
     margin: 0 auto;
     text-align: center;
-    color: rgb(0, 0, 0);
+    color: rgb(255, 255, 255) !important;
     font-family: 'Maven Pro', normal;
   }
   
   
   .profile-info h2 {
     margin-bottom: 10px;
-    color: rgb(0, 0, 0);
+    color: rgb(255, 255, 255) !important;
     font-family: 'Maven Pro', normal;
   }
   
@@ -47,6 +50,7 @@
     font-size: 20px;
     transition: 0.2s;
   }
+  
   .profile-info button:hover {
     border: 1px solid rgb(255, 255, 255);
     padding: 5px 10px;
@@ -60,6 +64,6 @@
   .Titles {
     margin: 25px 10px 0;
     text-align: left;
-    color:rgb(0, 0, 0);
+    color: rgb(255, 255, 255) !important;
     font-size: 17px;
   }
