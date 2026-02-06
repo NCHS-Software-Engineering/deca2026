@@ -75,7 +75,7 @@ function Profile() {
             <div className="Titles">Written event: </div>
             <div className="Titles">Cluster: </div>
 
-            <button onClick={handleLogout}>Logout</button>
+            <button onClick={handleLogout}>Logout</button> {/*does not show a pointer cursor*/}
           </div>
         </div>
       )}

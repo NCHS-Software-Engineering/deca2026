@@ -152,6 +152,7 @@ body {
   
   border: none;
 }
+
 .selector-box-right-end {
   flex: 1;
   min-width: 120px;
@@ -168,7 +169,7 @@ body {
 .selector-box:hover, .selector-box-left-end:hover, .selector-box-right-end:hover {
   filter: brightness(1.2);
   h3 {
-    color: #d8d8d8; /* makes it a bit easier on the eyes especially for business and financial literacy*/
+    color: #d8d8d8; /* makes it a bit easier on the eyes especially for business and financial literacy since their button colors are very bright already*/
     transition: 0.5s;
   }
 }
@@ -200,13 +201,13 @@ body {
   min-height: 45px;
 }
 
-.selector-box h3, .selector-box-left-end h3, .selector-box-right-end h3 {
+.selector-box h2, .selector-box-left-end h2, .selector-box-right-end h2 {
   text-align: center;
   padding: 20px 10px;
   width: 100%;
   margin: 0;
-  font-size: 1.1em;
-  color: white;
+  font-size: 1.4em;
+  color: white !important;
   min-height: 140px;
   display: flex;
   align-items: center;
