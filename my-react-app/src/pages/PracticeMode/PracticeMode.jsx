@@ -18,6 +18,8 @@ const Practice = () => {
   const [startTime, setStartTime] = useState(Date.now());
   const [knownIndicators, setKnownIndicators] = useState([]);
   const [hasKnown, setHasKnown] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   let user = null;
 const storedUserRaw = localStorage.getItem("user");
@@ -106,8 +108,27 @@ if (storedUserRaw) {
       console.error("Error loading practice data:", err);
     }
   };
-  
-  
+
+  // Add keyboard navigation for arrow keys
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      // Don't trigger if user is typing in the search box
+      if (event.target.type === 'text' || event.target.tagName === 'INPUT') {
+        return;
+      }
+
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        handleNext(event);
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        handleBack(event);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [currentIndex, data, randomCards, knownIndicators, user?.googleId, startTime]);
 
   const handleFlip = () => setShowMeaning(prev => !prev);
 
@@ -214,6 +235,24 @@ if (storedUserRaw) {
     setRandomCards(prev => !prev);
   };
 
+  const getFilteredSearchResults = () => {
+    if (!searchQuery.trim()) return [];
+    
+    const query = searchQuery.toLowerCase();
+    return data.filter(item =>
+      item.PerformanceIndicator.toLowerCase().includes(query) ||
+      item.Meaning.toLowerCase().includes(query)
+    );
+  };
+
+  const handleSearchResultClick = (index) => {
+    setCurrentIndex(index);
+    setShowMeaning(false);
+    setStartTime(Date.now());
+    setSearchQuery('');
+    setShowSearchResults(false);
+  };
+
   const handleKnowThis = async () => {
     const currentPI = data[currentIndex]?.PerformanceIndicator;
 
@@ -244,6 +283,47 @@ if (storedUserRaw) {
     <div>
       <div className="Event-Title">
         <h1>{eventData}</h1>
+      </div>
+
+      <div className="search-container">
+        <input
+          type="text"
+          className="search-input"
+          placeholder="Search flashcards by keyword..."
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setShowSearchResults(e.target.value.trim().length > 0);
+          }}
+          onFocus={() => searchQuery.trim().length > 0 && setShowSearchResults(true)}
+        />
+        
+        {showSearchResults && searchQuery.trim().length > 0 && (
+          <div className="search-results">
+            {getFilteredSearchResults().length > 0 ? (
+              getFilteredSearchResults().map((item, idx) => {
+                const originalIndex = data.indexOf(item);
+                return (
+                  <div
+                    key={idx}
+                    className="search-result-item"
+                    onClick={() => handleSearchResultClick(originalIndex)}
+                  >
+                    <div className="search-result-header">
+                      <strong>{item.PerformanceIndicator}</strong>
+                      <span className="search-result-index">#{originalIndex + 1}</span>
+                    </div>
+                    <div className="search-result-meaning">{item.Meaning}</div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="search-result-item no-results">
+                No flashcards found
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div
