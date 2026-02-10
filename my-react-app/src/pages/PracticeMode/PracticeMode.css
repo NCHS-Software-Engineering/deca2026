@@ -141,11 +141,6 @@
   transition: 0.5s; /* Optional: for hover effect */
 }
 
-.selector-box:hover {
-  filter: brightness(1.2);
-  color: black;
-}
-
 .selector-box h3 {
   text-align: center;
   padding: 20px 10px;
