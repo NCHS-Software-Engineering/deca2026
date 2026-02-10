@@ -222,13 +222,20 @@
   }
   
   .profile-button {
-    /* Remove position: fixed */
-    /* Remove right: 0 */
-    margin-left: auto; /* This will push it to the right */
-    margin-right: 20px; /* Add some spacing from the right edge */
-    display: flex;
-    align-items: center;
+      /* Remove position: fixed */
+      /* Remove right: 0 */
+      margin-left: auto; /* This will push it to the right */
+      margin-right: 20px; /* Add some spacing from the right edge */
+      display: flex;
+      align-items: center;
+      gap: 8px; /* space between role text and image */
 }
+
+  .profile-role {
+    font-size: 14px;
+    color: #212529; /* matches header text color */
+    text-transform: capitalize;
+  }
 
 
 .DECAlogo{
@@ -397,4 +404,11 @@ text-align: center;
   .mobile-nav .dropdown.show {
     display: block;
   }
+}
+
+/* Make founders' names white */
+.names-2025 h4 {
+  color: #ffffff;
+  text-align: center;
+  margin-top: 0.5rem;
 }
