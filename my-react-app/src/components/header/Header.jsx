@@ -35,9 +35,7 @@ const Header = () => {
 
 
         {/* would like to add a message shwowing user's name so that they can know if they are logged in*/}
-        <Link to= 'profile' className= "profile-button">
-        <img src = {ProfileImage}  width="60" height="60" alt = "Profile Button"/> 
-         </Link>
+       
         <Link to="profile" className="profile-button">
           {role && <span className="profile-role">{role}</span>}
           <img src={ProfileImage} width="60" height="60" alt="Profile Button" />

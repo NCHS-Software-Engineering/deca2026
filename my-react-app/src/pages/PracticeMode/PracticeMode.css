@@ -119,6 +119,86 @@
   width: 100%; /* Ensures it spans the full width of the container */
 }
 
+/* Popup styles for practice page */
+.practice-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 200ms ease-out;
+}
+
+.practice-popup {
+  background: white;
+  padding: 20px 24px;
+  border-radius: 10px;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+.practice-popup h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  color: var(--Primary);
+}
+
+.practice-popup .popup-cluster {
+  margin: 8px 0 16px 0;
+  color: #333;
+}
+
+.practice-popup-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.popup-button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 2px solid var(--Primary);
+  background: var(--Primary);
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.popup-button.secondary {
+  background: white;
+  color: var(--Primary);
+}
+
+.popup-button.secondary:hover {
+  background: #f2f7ff;
+}
+
+/* Checkbox styles */
+.practice-popup-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.popup-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #333;
+}
+
+.popup-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
 
 .Flash-Card-Body p {
   font-size: 18px;
