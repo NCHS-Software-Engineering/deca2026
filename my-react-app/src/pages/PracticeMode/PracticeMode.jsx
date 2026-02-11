@@ -24,13 +24,7 @@ const Practice = () => {
   const [showSearchResults, setShowSearchResults] = useState(false);
 
   // Popup state: show info about recently practiced cluster
-  const [showPopup, setShowPopup] = useState(() => {
-    try {
-      return localStorage.getItem('practice_popup_dontshow') !== 'true';
-    } catch (e) {
-      return true;
-    }
-  });
+  const [showPopup, setShowPopup] = useState(true);
 
   let user = null;
 const storedUserRaw = localStorage.getItem("user");
@@ -111,7 +105,7 @@ if (storedUserRaw) {
         });
   
         const indexRes = await axios.get("https://deca.redhawks.us/api/last-index", {
-          params: { googleId: user.googleId },
+          params: { googleId: user.googleId, careerCluster: eventCluster },
         });
   
         known = knownRes.data;
@@ -208,6 +202,7 @@ if (storedUserRaw) {
           body: JSON.stringify({
             googleId: user.googleId,
             lastIndex: currentIndex,
+            careerCluster: eventCluster,
           }),
         });
       } catch (err) {
@@ -268,6 +263,7 @@ if (storedUserRaw) {
           body: JSON.stringify({
             googleId: user.googleId,
             lastIndex: currentIndex,
+            careerCluster: eventCluster,
           }),
     
         });
