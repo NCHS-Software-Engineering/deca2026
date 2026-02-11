@@ -18,6 +18,8 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
+export default pool;
+
 (async () => {
   try {
     const connection = await pool.getConnection();
@@ -177,15 +179,21 @@ app.post('/api/update-stats', async (req, res) => {
 app.get("/api/get-stats", async (req, res) => {
   try {
     const googleId = req.query.googleId;
+    if (!googleId) {
+      return res.status(400).json({ error: "googleId required" });
+    }
     const sql = `
-      SELECT Time, NumCards, AvgTime
+      SELECT Time, NumCards, AvgTime, stat_date
       FROM Stats
-      WHERE ID = ? AND stat_date = CURDATE()
+      WHERE google_id = ?
+      ORDER BY stat_date DESC
+      LIMIT 1
     `;
     const [results] = await pool.query(sql, [googleId]);
     if (results.length === 0) return res.json({ Time: 0, NumCards: 0, AvgTime: 0 });
     res.json(results[0]);
   } catch (err) {
+    console.error("Error fetching stats:", err);
     res.status(500).json(err);
   }
 });
