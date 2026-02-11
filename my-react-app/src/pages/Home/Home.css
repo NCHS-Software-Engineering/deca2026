@@ -241,10 +241,6 @@ body {
 .personal-finance {
   background-color: var(--Color-Personal-Finance);
 }
- 
-.examples div:hover {
-  background-color: rgba(0, 0, 0, 0.2);
-}
 
 /* Removed responsive design to match fixed layout */
 
