@@ -65,7 +65,7 @@ function Profile() {
         <div>
           <div className="Welcome"><h1>Welcome to your profile!</h1></div>
           <div className="profile-info">
-            {user.picture && <img src={user.picture} alt="profile" />}
+            {/* Profile image is shown in header; remove centered image here */}
             <h2>{user.name}</h2>
             <p>{user.email}</p>
             <p><strong>Role:</strong> {user.role}</p>

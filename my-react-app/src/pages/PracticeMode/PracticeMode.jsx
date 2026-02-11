@@ -15,11 +15,22 @@ const Practice = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showMeaning, setShowMeaning] = useState(false);
   const [randomCards, setRandomCards] = useState(false);
+  const [remainingRandomIndices, setRemainingRandomIndices] = useState([]);
+  const [randomCycleCompleted, setRandomCycleCompleted] = useState(false);
   const [startTime, setStartTime] = useState(Date.now());
   const [knownIndicators, setKnownIndicators] = useState([]);
   const [hasKnown, setHasKnown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
+
+  // Popup state: show info about recently practiced cluster
+  const [showPopup, setShowPopup] = useState(() => {
+    try {
+      return localStorage.getItem('practice_popup_dontshow') !== 'true';
+    } catch (e) {
+      return true;
+    }
+  });
 
   let user = null;
 const storedUserRaw = localStorage.getItem("user");
@@ -39,13 +50,13 @@ if (storedUserRaw) {
 
   // Set the event-related metadata on mount
   useEffect(() => {
-    const tempEventData =
-      location.state?.name || localStorage.getItem("deca_headerName") || "Please Choose an Event from Home";
-    const tempEventColor =
-      location.state?.color || localStorage.getItem("deca_color") || "var(--Primary)";
     const tempEventCluster =
       location.state?.cluster || localStorage.getItem("deca_cluster") || "Marketing";
-  
+    const tempEventData =
+      location.state?.name || localStorage.getItem("deca_headerName") || tempEventCluster;
+    const tempEventColor =
+      location.state?.color || localStorage.getItem("deca_color") || "var(--Primary)";
+
     setEventData(tempEventData);
     setEventColor(tempEventColor);
     setEventCluster(tempEventCluster);
@@ -58,6 +69,30 @@ if (storedUserRaw) {
     console.log("eventCluster being used:", eventCluster);
     fetchData();
   }, [eventCluster, randomCards, user?.googleId, isInitialized]);
+
+  // Close popup for this session
+  const [dontShowChecked, setDontShowChecked] = useState(false);
+
+  const closePopup = () => {
+    try {
+      if (dontShowChecked) {
+        localStorage.setItem('practice_popup_dontshow', 'true');
+      }
+    } catch (e) {
+      console.error('Error saving popup preference', e);
+    }
+    setShowPopup(false);
+  };
+
+  // Helper: shuffle an array (Fisher-Yates)
+  const shuffle = (arr) => {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
   
 
   //https://deca.redhawks.us/
@@ -102,8 +137,21 @@ if (storedUserRaw) {
   
       console.log("Filtered data:", filtered);
       setData(filtered);
-  
-      setCurrentIndex(index < filtered.length ? index : 0);
+
+      const startIndex = index < filtered.length ? index : 0;
+      setCurrentIndex(startIndex);
+
+      // initialize remaining random indices when in random mode
+      if (randomCards && filtered.length > 0) {
+        const allIndices = filtered.map((_, i) => i);
+        // remove current startIndex so next random won't immediately repeat
+        const remaining = shuffle(allIndices.filter(i => i !== startIndex));
+        setRemainingRandomIndices(remaining);
+        setRandomCycleCompleted(false);
+      } else {
+        setRemainingRandomIndices([]);
+        setRandomCycleCompleted(false);
+      }
     } catch (err) {
       console.error("Error loading practice data:", err);
     }
@@ -167,16 +215,26 @@ if (storedUserRaw) {
       }
     }
 
-    let nextIndex;
+    let nextIndex = currentIndex;
 
     if (randomCards) {
-      do {
-        nextIndex = Math.floor(Math.random() * data.length);
-      } while (
-        data.length > 1 &&
-        knownIndicators.includes(data[nextIndex]?.PerformanceIndicator) &&
-        nextIndex === currentIndex
-      );
+      // Use remainingRandomIndices to ensure each card is shown once per cycle
+      let remaining = remainingRandomIndices.slice();
+
+      if (remaining.length === 0) {
+        // We've exhausted the cycle; refill (this allows repeats now)
+        const allIndices = data.map((_, i) => i);
+        // remove currentIndex to avoid immediate repeat if possible
+        let refill = shuffle(allIndices.filter(i => i !== currentIndex));
+        // if only one card exists, allow it
+        if (refill.length === 0 && allIndices.length > 0) refill = [currentIndex];
+        remaining = refill;
+        setRandomCycleCompleted(true);
+      }
+
+      // pop next from front
+      nextIndex = remaining.shift();
+      setRemainingRandomIndices(remaining);
     } else {
       nextIndex = currentIndex + 1;
       while (
@@ -228,11 +286,40 @@ if (storedUserRaw) {
   const handleRestart = (event) => {
     event.stopPropagation();
     setCurrentIndex(0);
+    setShowMeaning(false);
     setStartTime(Date.now());
+    // reset random cycle when restarting
+    if (randomCards && data.length > 0) {
+      const allIndices = data.map((_, i) => i);
+      const remaining = shuffle(allIndices.filter(i => i !== 0));
+      setRemainingRandomIndices(remaining);
+      setRandomCycleCompleted(false);
+    }
   };
 
   const handleRand = () => {
-    setRandomCards(prev => !prev);
+    setRandomCards(prev => {
+      const newVal = !prev;
+      if (newVal && data.length > 0) {
+        const allIndices = data.map((_, i) => i);
+        const remaining = shuffle(allIndices.filter(i => i !== currentIndex));
+        setRemainingRandomIndices(remaining);
+        setRandomCycleCompleted(false);
+      } else {
+        setRemainingRandomIndices([]);
+        setRandomCycleCompleted(false);
+      }
+      return newVal;
+    });
+  };
+
+  const isAtEnd = () => {
+    if (!data || data.length === 0) return false;
+    if (randomCards) {
+      // at end when there are no remaining indices after showing current
+      return remainingRandomIndices.length === 0;
+    }
+    return currentIndex >= data.length - 1;
   };
 
   const getFilteredSearchResults = () => {
@@ -284,6 +371,29 @@ if (storedUserRaw) {
       <div className="Event-Title">
         <h1>{eventData}</h1>
       </div>
+
+      {/* Informational popup about recently practiced cluster */}
+      {showPopup && (
+        <div className="practice-popup-overlay" onClick={closePopup}>
+          <div className="practice-popup" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+            <h3>This page contains your most recently practiced flashcard cluster.</h3>
+            <p className="popup-cluster">Cluster: <strong>{eventCluster}</strong></p>
+            <div className="practice-popup-controls">
+              <label className="popup-checkbox">
+                <input
+                  type="checkbox"
+                  checked={dontShowChecked}
+                  onChange={(e) => setDontShowChecked(e.target.checked)}
+                />
+                <span>Don't show again.</span>
+              </label>
+              <div className="practice-popup-buttons">
+                <button className="popup-button" onClick={closePopup}>Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="search-container">
         <input
@@ -384,7 +494,7 @@ if (storedUserRaw) {
               ) : (
                 <div className="flash-card-button blank" />
               )}
-              {currentIndex >= data.length - 1 ? (
+              {isAtEnd() ? (
                 <button className="flash-card-button restart" onClick={handleRestart}>
                   <h3>Restart</h3>
                 </button>
@@ -402,9 +512,11 @@ if (storedUserRaw) {
         <h3>Restart</h3>
       </button>
 
-      <button className={`random-toggle-button ${randomCards ? "active" : ""}`} onClick={handleRand}>
-        Random
-      </button>
+      {!isAtEnd() && (
+        <button className={`random-toggle-button ${randomCards ? "active" : ""}`} onClick={handleRand}>
+          Random
+        </button>
+      )}
     </div>
   );
 };
