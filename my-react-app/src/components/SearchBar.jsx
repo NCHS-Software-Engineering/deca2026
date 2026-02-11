@@ -136,7 +136,7 @@ const SearchBar = () => {
       <input
         type="text"
         className="search-input"
-        placeholder="Search website & flashcards..."
+        placeholder="    Search website & flashcards..."
         value={searchQuery}
         onChange={(e) => handleSearch(e.target.value)}
         onFocus={() => searchQuery.trim() && setShowResults(true)}
