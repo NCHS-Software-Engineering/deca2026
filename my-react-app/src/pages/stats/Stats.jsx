@@ -4,21 +4,22 @@ import "./Stats.css";
 const Stats = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const user = JSON.parse(localStorage.getItem("user"));
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (user?.googleId) {
-      fetch(`http://localhost:4000/api/get-stats?googleId=${user.googleId}`)
-        .then(res => res.json())
-        .then(data => {
-          setStats(data);
-          setLoading(false);
-        })
-        .catch(err => {
-          console.error("Stats fetch error:", err);
-          setLoading(false);
-        });
-    }
+    fetch(`http://localhost:3000/api/stats`)
+      .then(res => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.json();
+      })
+      .then(data => {
+        setStats(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message);
+        setLoading(false);
+      });
   }, []);
 
   return (
@@ -26,13 +27,31 @@ const Stats = () => {
       <h1 className="Header">STATS</h1>
       {loading ? (
         <p>Loading...</p>
-      ) : stats ? (
-        <>
-          <h1>Time Studied Today: {stats.Time} sec</h1>
-          <h1>Number of Cards Studied: {stats.NumCards}</h1>
-          <h1>Number of Cards Memorized: TODO</h1>
-          <h1>Time Per Card: {stats.AvgTime?.toFixed(2)} sec</h1>
-        </>
+      ) : error ? (
+        <div style={{color:'red'}}>Error: {error}</div>
+      ) : stats && stats.length > 0 ? (
+        <table className="stats-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Time (seconds)</th>
+              <th>Number of Cards</th>
+              <th>Average Time/Card (seconds)</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {stats.map((s, index) => (
+              <tr key={index}>
+                <td>{s.ID}</td>
+                <td>{s.Time}</td>
+                <td>{s.NumCards}</td>
+                <td>{s.AvgTime?.toFixed(2)}</td>
+                <td>{s.stat_date}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       ) : (
         <p>No stats available</p>
       )}

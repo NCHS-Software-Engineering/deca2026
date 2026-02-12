@@ -240,6 +240,34 @@ app.get('/api/password', async (req, res) => {
   }
 });
 
+app.get('/api/users', async (req, res) => {
+  try {
+    const sql = `
+      SELECT google_id, name, email, role
+      FROM Users
+    `;
+    const [results] = await pool.query(sql);
+    res.json(results);
+  } catch (err) {
+    console.error("Error fetching users:", err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+app.get('/api/stats', async (req, res) => {
+  try {
+    const sql = `
+      SELECT ID, Time, NumCards, AvgTime, stat_date
+      FROM Stats
+    `;
+    const [results] = await pool.query(sql);
+    res.json(results);
+  } catch (err) {
+    console.error("Error fetching stats:", err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 app.post('/api/password', async (req, res) => {
   try {
     const { newPassword } = req.body;
@@ -269,6 +297,6 @@ app.get('{*splat}', (req, res) => {
 
 
 
-app.listen(4000, () => {
-  console.log(`Server is running on port 4000.`);
+app.listen(3000, () => {
+  console.log(`Server is running on port 3000.`);
 });

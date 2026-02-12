@@ -5,8 +5,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   try {
     // Select from inventory table with joins
     const [rows] = await pool.execute(
-      `SELECT *
-FROM Stats`,
+      `SELECT google_id, name, email, role
+FROM deca.Users;`,
 
     );
     return NextResponse.json(rows);
