@@ -12,7 +12,7 @@
     PARTY MODE:
     background: repeating-conic-gradient(red 0deg 10deg, yellow 10deg 20deg, blue 20deg 30deg);
     */ 
-    background: #67bed9;
+    background: var(--Background); /* IF YOU WANT TO EDIT BACKGROUND COLOR GO TO :root DO NOT EDIT THIS */
     font-family: 'Maven Pro', normal;
     
     
@@ -37,7 +37,7 @@
   :root{/*Colors the app */
     --Primary: #1e283e;
     --Secondary: #398cfd;
-    --Background: #FFFFFF;
+    --Background: #7cb5e1;
     --Text: #000000;
     --Text-Inverted: #FFFFFF;
     --Color-Business: #f3c742;
@@ -147,7 +147,7 @@
   .content {
     width: 100vw;
     padding: 3rem 0px;
-    {/*background-color: bisque;*/}
+    /*background-color: bisque;*/
   }
   
   .content h1 {
