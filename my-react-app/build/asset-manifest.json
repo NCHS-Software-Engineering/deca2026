@@ -1,0 +1,17 @@
+{
+  "files": {
+    "main.css": "/static/css/main.d88922e2.css",
+    "main.js": "/static/js/main.7cdcf391.js",
+    "static/media/DECA-promo-1.webp": "/static/media/DECA-promo-1.1513cf2b89208a521ff7.webp",
+    "static/media/newheaderlogo.png": "/static/media/newheaderlogo.51bc5e0dbec464441e63.png",
+    "static/media/ProfileImageFile.webp": "/static/media/ProfileImageFile.068d337779b7141df8a6.webp",
+    "static/media/your-scroll-image.png": "/static/media/your-scroll-image.d37382072a05a72d7481.png",
+    "index.html": "/index.html",
+    "main.d88922e2.css.map": "/static/css/main.d88922e2.css.map",
+    "main.7cdcf391.js.map": "/static/js/main.7cdcf391.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.d88922e2.css",
+    "static/js/main.7cdcf391.js"
+  ]
+}

@@ -1,6 +1,10 @@
+.practice-page { color: white; }
+
 .Event-Title {
   text-align: center;
 }
+
+.practice-page .Event-Title h1 { color: white; }
 
 .search-container {
   position: relative;
@@ -30,8 +34,8 @@
   top: 100%;
   left: 0;
   right: 0;
-  background: white;
-  border: 2px solid var(--Primary);
+  background: var(--Primary); /* darker so white text is readable */
+  border: 2px solid rgba(255,255,255,0.08);
   border-top: none;
   border-radius: 0 0 20px 20px;
   max-height: 400px;
@@ -42,9 +46,10 @@
 
 .search-result-item {
   padding: 12px 16px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
   cursor: pointer;
   transition: background-color 0.2s ease;
+  color: white; /* make text white */
 }
 
 .search-result-item:last-child {
@@ -52,7 +57,7 @@
 }
 
 .search-result-item:hover {
-  background-color: #f0f0f0;
+  background-color: rgba(255,255,255,0.04);
 }
 
 .search-result-item.no-results {
@@ -74,14 +79,14 @@
 }
 
 .search-result-header strong {
-  color: var(--Primary);
+  color: white; /* override for dark/dominant search-results */
   font-weight: bold;
 }
 
-.search-result-index {
+.search-results .search-result-index {
   font-size: 12px;
-  color: #999;
-  background-color: #f5f5f5;
+  color: rgba(255,255,255,0.85);
+  background-color: rgba(255,255,255,0.05);
   padding: 4px 8px;
   border-radius: 4px;
 }
@@ -132,24 +137,25 @@
 }
 
 .practice-popup {
-  background: white;
+  background: rgba(0,0,0,0.6); /* darker so white text reads well */
   padding: 20px 24px;
   border-radius: 10px;
   max-width: 480px;
   width: 90%;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
   text-align: center;
+  color: white;
 }
 
 .practice-popup h3 {
   margin: 0 0 8px 0;
   font-size: 18px;
-  color: var(--Primary);
+  color: white;
 }
 
 .practice-popup .popup-cluster {
   margin: 8px 0 16px 0;
-  color: #333;
+  color: rgba(255,255,255,0.9);
 }
 
 .practice-popup-buttons {
@@ -191,7 +197,7 @@
   align-items: center;
   gap: 8px;
   font-weight: 600;
-  color: #333;
+  color: white;
 }
 
 .popup-checkbox input[type="checkbox"] {

@@ -8,6 +8,7 @@ import ProfileImage from '../../images/ProfileImageFile.webp';
 
 const Header = () => {
   const [userName, setUserName] = useState('');
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     try {
@@ -18,6 +19,13 @@ const Header = () => {
         const name = parsed.name || parsed.given_name || parsed.email?.split('@')[0] || 'User';
         setUserName(name);
       }
+
+      // initialize dark-mode from localStorage
+      const savedDark = localStorage.getItem('darkMode');
+      const isDark = savedDark === 'true';
+      setDarkMode(isDark);
+      if (isDark) document.documentElement.classList.add('dark-mode');
+      else document.documentElement.classList.remove('dark-mode');
     } catch (e) {
       // ignore
     }
@@ -41,11 +49,31 @@ const Header = () => {
 
 
         {/* would like to add a message shwowing user's name so that they can know if they are logged in*/}
-       
-        <Link to="profile" className="profile-button">
-          {userName && <span className="profile-name">{userName}</span>}
-          <img src={ProfileImage} width="60" height="60" alt="Profile Button" />
-        </Link>
+        
+        <div className="profile-control">
+          <Link to="profile" className="profile-button">
+            {userName && <span className="profile-name">{userName}</span>}
+            <img src={ProfileImage} width="60" height="60" alt="Profile Button" />
+          </Link>
+
+          <button
+            className={`dark-toggle`}
+            data-tooltip={darkMode ? 'Light mode' : 'Dark mode'}
+            onClick={() => {
+              const next = !darkMode;
+              setDarkMode(next);
+              try { localStorage.setItem('darkMode', next ? 'true' : 'false'); } catch (e) {}
+              document.documentElement.classList.toggle('dark-mode', next);
+            }}
+            aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={darkMode ? 'Light mode' : 'Dark mode'}
+          >
+            {/* small moon icon */}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" fill="currentColor" />
+            </svg>
+          </button>
+        </div>
 
       </div>
     </header>

@@ -15,7 +15,7 @@ const Stats = () => {
   }, []);
 
   return (
-    <div>
+    <div className="stats-page">
       <h1 className="Header">STATS</h1>
       {stats ? (
         <>

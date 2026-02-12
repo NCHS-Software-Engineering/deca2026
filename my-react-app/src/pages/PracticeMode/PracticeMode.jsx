@@ -17,6 +17,8 @@ const Practice = () => {
   const [randomCards, setRandomCards] = useState(false);
   const [remainingRandomIndices, setRemainingRandomIndices] = useState([]);
   const [randomCycleCompleted, setRandomCycleCompleted] = useState(false);
+  // store the index the user was on before enabling random mode so we can return to it
+  const [savedIndexBeforeRandom, setSavedIndexBeforeRandom] = useState(null);
   const [startTime, setStartTime] = useState(Date.now());
   const [knownIndicators, setKnownIndicators] = useState([]);
   const [hasKnown, setHasKnown] = useState(false);
@@ -66,6 +68,19 @@ if (storedUserRaw) {
 
   // Close popup for this session
   const [dontShowChecked, setDontShowChecked] = useState(false);
+
+  // Initialize popup visibility from localStorage and restore checkbox state
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('practice_popup_dontshow');
+      if (saved === 'true') {
+        setShowPopup(false);
+        setDontShowChecked(true);
+      }
+    } catch (e) {
+      console.error('Error reading popup preference', e);
+    }
+  }, []);
 
   const closePopup = () => {
     try {
@@ -296,15 +311,47 @@ if (storedUserRaw) {
   const handleRand = () => {
     setRandomCards(prev => {
       const newVal = !prev;
+
       if (newVal && data.length > 0) {
+        // turning ON random: save the current index so we can restore it later
+        setSavedIndexBeforeRandom(currentIndex);
+
         const allIndices = data.map((_, i) => i);
         const remaining = shuffle(allIndices.filter(i => i !== currentIndex));
         setRemainingRandomIndices(remaining);
         setRandomCycleCompleted(false);
       } else {
+        // turning OFF random: restore the saved index (if valid)
+        const restoreIndex =
+          savedIndexBeforeRandom !== null && savedIndexBeforeRandom < data.length
+            ? savedIndexBeforeRandom
+            : currentIndex;
+
+        setCurrentIndex(restoreIndex);
+        setShowMeaning(false);
+        setStartTime(Date.now());
+        setSavedIndexBeforeRandom(null);
         setRemainingRandomIndices([]);
         setRandomCycleCompleted(false);
+
+        // persist restored index for logged-in users (matches Next/Back behavior)
+        if (user?.googleId) {
+          try {
+            fetch("https://deca.redhawks.us/api/last-index", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                googleId: user.googleId,
+                lastIndex: restoreIndex,
+                careerCluster: eventCluster,
+              }),
+            });
+          } catch (err) {
+            console.error("Error updating index after disabling random:", err);
+          }
+        }
       }
+
       return newVal;
     });
   };
@@ -363,7 +410,7 @@ if (storedUserRaw) {
   };
 
   return (
-    <div>
+    <div className="practice-page">
       <div className="Event-Title">
         <h1>{eventData}</h1>
       </div>

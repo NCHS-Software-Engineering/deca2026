@@ -22,6 +22,18 @@ const pool = mysql.createPool({
   try {
     const connection = await pool.getConnection();
     console.log("✅ Connected to the database.");
+
+    // Ensure per-cluster last-index table exists so progress can be tracked per career cluster
+    const createTableSql = `
+      CREATE TABLE IF NOT EXISTS user_last_index (
+        google_id VARCHAR(255) NOT NULL,
+        career_cluster VARCHAR(255) NOT NULL,
+        last_index INT DEFAULT 0,
+        PRIMARY KEY (google_id, career_cluster)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `;
+    await connection.query(createTableSql);
+
     connection.release();
   } catch (err) {
     console.error("❌ Failed to connect to the database:", err);
@@ -42,8 +54,18 @@ app.get('/api/PIs', async (req, res) => {
 
 app.get('/api/last-index', async (req, res) => {
   try {
-    const sql = 'SELECT last_index FROM deca.Users WHERE google_id = ?';
     const id = req.query.googleId;
+    const careerCluster = req.query.careerCluster;
+
+    // If a careerCluster is provided, try to return the per-cluster value first.
+    if (careerCluster) {
+      const sqlCluster = 'SELECT last_index FROM user_last_index WHERE google_id = ? AND career_cluster = ?';
+      const [clusterRows] = await pool.query(sqlCluster, [id, careerCluster]);
+      if (clusterRows.length > 0) return res.json(clusterRows);
+      // fall back to the global Users.last_index if no per-cluster row exists
+    }
+
+    const sql = 'SELECT last_index FROM deca.Users WHERE google_id = ?';
     const [data] = await pool.query(sql, [id]);
     res.json(data);
   } catch (err) {
@@ -53,8 +75,21 @@ app.get('/api/last-index', async (req, res) => {
 
 app.post('/api/last-index', async (req, res) => {
   try {
+    const { googleId, lastIndex, careerCluster } = req.body;
+
+    // If a careerCluster is provided, upsert into the per-cluster table.
+    if (careerCluster) {
+      const sql = `
+        INSERT INTO user_last_index (google_id, career_cluster, last_index)
+        VALUES (?, ?, ?)
+        ON DUPLICATE KEY UPDATE last_index = VALUES(last_index)
+      `;
+      const [result] = await pool.query(sql, [googleId, careerCluster, lastIndex]);
+      return res.json(result);
+    }
+
+    // Backward-compatible behavior: update the global users.last_index
     const sql = 'UPDATE Users SET last_index=? WHERE google_id = ?';
-    const { googleId, lastIndex } = req.body;
     const [data] = await pool.query(sql, [lastIndex, googleId]);
     res.json(data);
   } catch (err) {
