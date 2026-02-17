@@ -18,6 +18,8 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
+export default pool;
+
 (async () => {
   try {
     const connection = await pool.getConnection();
@@ -288,10 +290,10 @@ const path = require('path');
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Catch-all to handle React routes (reloads, deep links)
-/* app.get('{*splat}', (req, res) => {
+app.get('{*splat}', (req, res) => {
   // If the request is not for an API route, serve the React app
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
-}); */
+});
 
 
 
