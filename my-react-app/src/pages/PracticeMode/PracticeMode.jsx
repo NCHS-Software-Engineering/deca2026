@@ -24,6 +24,11 @@ const Practice = () => {
   const [hasKnown, setHasKnown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [showListView, setShowListView] = useState(false);
+  const [starred, setStarred] = useState([]);
+  const [originalData, setOriginalData] = useState([]);
+  const [fullData, setFullData] = useState([]);
+  const [sortMode, setSortMode] = useState('default'); // 'default' | 'starred' | 'known'
 
   // Popup state: show info about recently practiced cluster
   const [showPopup, setShowPopup] = useState(true);
@@ -64,7 +69,61 @@ if (storedUserRaw) {
     if (!isInitialized) return;
     console.log("eventCluster being used:", eventCluster);
     fetchData();
+    // load starred items for this cluster from localStorage
+    try {
+      const key = `starred_${eventCluster}`;
+      const raw = localStorage.getItem(key);
+      if (raw) setStarred(JSON.parse(raw));
+      else setStarred([]);
+    } catch (e) {
+      setStarred([]);
+    }
+    // apply any active sort after loading data
+    if (sortMode !== 'default' && data.length > 0) {
+      applySort(sortMode);
+    }
   }, [eventCluster, randomCards, user?.googleId, isInitialized]);
+
+  const applySort = (mode, starredOverride) => {
+    // if no source available, nothing to sort
+    const useStarred = typeof starredOverride !== 'undefined' ? starredOverride : starred;
+    // preserve current PI so we can restore currentIndex after sorting
+    const currentPI = data[currentIndex]?.PerformanceIndicator;
+
+    // For starred sorting, operate on the original filtered list (originalData) so toggle-back restores reliably
+    let source = (originalData && originalData.length > 0) ? originalData.slice() : data.slice();
+
+    if (mode === 'known') {
+      // For known sorting, show the full list (including known items) so we can surface known items
+      source = (fullData && fullData.length > 0) ? fullData.slice() : source;
+    }
+
+    if (!source || source.length === 0) return;
+
+    let sorted = source.slice();
+    if (mode === 'starred') {
+      // starred items should appear first
+      sorted.sort((a, b) => {
+        const aStar = useStarred.includes(a.PerformanceIndicator) ? 0 : 1;
+        const bStar = useStarred.includes(b.PerformanceIndicator) ? 0 : 1;
+        return aStar - bStar;
+      });
+    } else if (mode === 'known') {
+      // put known items first
+      sorted.sort((a, b) => {
+        const aKnown = knownIndicators.includes(a.PerformanceIndicator) ? 0 : 1;
+        const bKnown = knownIndicators.includes(b.PerformanceIndicator) ? 0 : 1;
+        return aKnown - bKnown;
+      });
+    }
+
+    // update data and restore the current index to the same PI if possible
+    setData(sorted);
+    if (currentPI) {
+      const newIndex = sorted.findIndex(x => x.PerformanceIndicator === currentPI);
+      if (newIndex >= 0) setCurrentIndex(newIndex);
+    }
+  };
 
   // Close popup for this session
   const [dontShowChecked, setDontShowChecked] = useState(false);
@@ -137,24 +196,25 @@ if (storedUserRaw) {
       });
   
       const allIndicators = piRes.data;
-  
-      const filtered = user?.googleId
-        ? allIndicators.filter(
-            (item) => !known.includes(item.PerformanceIndicator)
-          )
-        : allIndicators;
-  
-      console.log("Filtered data:", filtered);
-      setData(filtered);
+
+      // include all indicators in the main deck (don't remove known ones)
+      const filtered = allIndicators;
+
+      console.log("Loaded data (including known):", filtered);
+      // fullData keeps the full set
+      setFullData(allIndicators.slice());
+      // originalData keeps the original ordering for restore
+      setOriginalData(filtered.slice());
+      setData(filtered.slice());
 
       const startIndex = index < filtered.length ? index : 0;
       setCurrentIndex(startIndex);
 
       // initialize remaining random indices when in random mode
       if (randomCards && filtered.length > 0) {
-        const allIndices = filtered.map((_, i) => i);
-        // remove current startIndex so next random won't immediately repeat
-        const remaining = shuffle(allIndices.filter(i => i !== startIndex));
+          const allIndices = filtered.map((_, i) => i);
+          // remove current startIndex so next random won't immediately repeat
+          const remaining = shuffle(allIndices.filter(i => i !== startIndex));
         setRemainingRandomIndices(remaining);
         setRandomCycleCompleted(false);
       } else {
@@ -165,6 +225,23 @@ if (storedUserRaw) {
       console.error("Error loading practice data:", err);
     }
   };
+
+  // when originalData is loaded, re-apply sort if a mode is active
+  // restore or apply sort when sortMode changes
+  useEffect(() => {
+    if (sortMode === 'default') {
+      if (originalData && originalData.length > 0) {
+        const currentPI = data[currentIndex]?.PerformanceIndicator;
+        setData(originalData.slice());
+        if (currentPI) {
+          const newIndex = originalData.findIndex(x => x.PerformanceIndicator === currentPI);
+          if (newIndex >= 0) setCurrentIndex(newIndex);
+        }
+      }
+    } else {
+      applySort(sortMode);
+    }
+  }, [sortMode]);
 
   // Add keyboard navigation for arrow keys
   useEffect(() => {
@@ -247,12 +324,7 @@ if (storedUserRaw) {
       setRemainingRandomIndices(remaining);
     } else {
       nextIndex = currentIndex + 1;
-      while (
-        nextIndex < data.length &&
-        knownIndicators.includes(data[nextIndex]?.PerformanceIndicator)
-      ) {
-        nextIndex++;
-      }
+      if (nextIndex >= data.length) nextIndex = 0;
     }
 
     setCurrentIndex(nextIndex < data.length ? nextIndex : 0);
@@ -263,12 +335,7 @@ if (storedUserRaw) {
   const handleBack = async (event) => {
     event.stopPropagation();
     let prevIndex = currentIndex - 1;
-    while (
-      prevIndex >= 0 &&
-      knownIndicators.includes(data[prevIndex]?.PerformanceIndicator)
-    ) {
-      prevIndex--;
-    }
+    if (prevIndex < 0) prevIndex = data.length - 1;
 
     if (user?.googleId) {
       try {
@@ -407,6 +474,27 @@ if (storedUserRaw) {
     } catch (error) {
       console.error("Error adding to I_Know_This_Terms:", error);
     }
+  };
+
+  const toggleStar = (pi) => {
+    try {
+      const key = `starred_${eventCluster}`;
+      setStarred((prev) => {
+        const exists = prev.includes(pi);
+        const next = exists ? prev.filter(x => x !== pi) : [pi, ...prev];
+        try { localStorage.setItem(key, JSON.stringify(next)); } catch (e) {}
+        // reapply starred sort if active (use next as override)
+        if (sortMode === 'starred') applySort('starred', next);
+        return next;
+      });
+    } catch (err) {
+      console.error('Error toggling star', err);
+    }
+  };
+
+  const handleSortToggle = (mode) => {
+    const next = sortMode === mode ? 'default' : mode;
+    setSortMode(next);
   };
 
   return (
@@ -551,15 +639,74 @@ if (storedUserRaw) {
         )}
       </div>
 
-      <button className="flash-card-button restart-below" onClick={handleRestart}>
-        <h3>Restart</h3>
-      </button>
+      <div className="practice-controls" style={{ textAlign: 'center', marginTop: 8 }}>
+        {!isAtEnd() && (
+          <button className={`random-toggle-button ${randomCards ? "active" : ""}`} onClick={handleRand}>
+            Random
+          </button>
+        )}
 
-      {!isAtEnd() && (
-        <button className={`random-toggle-button ${randomCards ? "active" : ""}`} onClick={handleRand}>
-          Random
-        </button>
+        <div style={{ display: 'inline-block', marginLeft: 12, marginRight: 12 }}>
+          <button className={`sort-button ${sortMode === 'starred' ? 'active' : ''}`} onClick={() => handleSortToggle('starred')}>Sort: Starred</button>
+          <button className={`sort-button ${sortMode === 'known' ? 'active' : ''}`} onClick={() => handleSortToggle('known')} style={{ marginLeft: 8 }}>Sort: Known</button>
+        </div>
+
+        <div style={{ display: 'block', marginTop: 12 }}>
+          <button
+            className="flash-card-button restart-below show-all-button"
+            onClick={() => setShowListView(prev => !prev)}
+            aria-pressed={showListView}
+          >
+            <h3>{showListView ? 'Hide All' : 'Show All Flashcards'}</h3>
+          </button>
+        </div>
+
+        <div style={{ display: 'block', marginTop: 12 }}>
+          <button className="flash-card-button restart-below" onClick={handleRestart}>
+            <h3>Restart</h3>
+          </button>
+        </div>
+      </div>
+
+      {showListView && (
+        <div className="flashcard-list" role="region" aria-label="All flashcards">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Term</th>
+                <th>Meaning</th>
+                <th onClick={() => handleSortToggle('starred')} style={{ cursor: 'pointer' }}>Star ▾</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((item, idx) => {
+                const pi = item.PerformanceIndicator;
+                const isStarred = starred.includes(pi);
+                return (
+                  <tr key={idx} className="flashcard-list-row" onClick={() => { setCurrentIndex(idx); setShowMeaning(false); setStartTime(Date.now()); }}>
+                    <td>{idx + 1}</td>
+                    <td className="fc-term">{pi}</td>
+                    <td className="fc-meaning">{item.Meaning}</td>
+                    <td>
+                      <button
+                        className={`star-button ${isStarred ? 'starred' : ''}`}
+                        onClick={(e) => { e.stopPropagation(); toggleStar(pi); }}
+                        aria-pressed={isStarred}
+                        title={isStarred ? 'Unstar' : 'Star'}
+                      >
+                        {isStarred ? '★' : '☆'}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
+
+      {/* single Restart/Random controls are in the practice-controls block above */}
     </div>
   );
 };

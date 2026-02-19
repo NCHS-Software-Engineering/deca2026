@@ -336,7 +336,7 @@
     --Secondary: #398cfd;    /* secondary accent */
     --Text: #ffffff;         /* main text */
     --Text-Inverted: #071026;/* text to use on light backgrounds */
-    --Nav-Bar: #899499;      /* nav bar */
+    --Nav-Bar: #0d2433;      /* darker nav bar for better contrast */
     --moon-color: #ffd54f;   /* moon becomes yellow in dark mode */
 
     background-color: var(--Background);
@@ -352,7 +352,8 @@
   .dark-mode header {
     background-color: var(--Nav-Bar);
     color: var(--Text);
-    box-shadow: 0 6px 18px rgba(2,6,23,0.7);
+    box-shadow: 0 8px 30px rgba(2,6,23,0.85);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
   }
 
   .dark-mode .profile-name { color: var(--Text); }
@@ -367,28 +368,36 @@
     color: var(--Text);
   }
 
-  /* search input / results in dark mode */
-  .dark-mode .search-input {
-    background-color: var(--Nav-Bar);
-    opacity: 0.2;
-    border-color: var(--Text);
-    opacity: 0.06;
+  /* search input / results in dark mode - stronger contrast and readable text */
+  .dark-mode .search-bar-container .search-input {
+    background-color: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.10);
     color: var(--Text);
     box-shadow: none;
+    caret-color: var(--Secondary);
   }
-  .dark-mode .search-input::placeholder { color: rgba(230,238,248,0.5); }
+  .dark-mode .search-bar-container .search-input:focus {
+    background-color: rgba(255,255,255,0.04);
+    border-color: var(--Secondary);
+    box-shadow: 0 0 10px rgba(57,140,253,0.12);
+  }
+  .dark-mode .search-bar-container .search-input::placeholder { color: rgba(255,255,255,0.55); }
 
-  .dark-mode .search-results,
-  .dark-mode .search-results .search-result-item {
-    background: var(--Nav-Bar);
-    opacity: 0.2;
-    border-color: var(--Text);
-    opacity: 0.04;
-    color: var(--Text);
+  /* ensure the dropdown and its items are visible in dark mode */
+  .dark-mode .search-bar-container .search-results-dropdown {
+    background: rgba(13,36,51,0.95);
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 10px 30px rgba(2,6,23,0.7);
   }
-  .dark-mode .search-result-item:hover { background: rgba(255,255,255,0.03); }
-  .dark-mode .search-result-index { background: rgba(255,255,255,0.03); color: rgba(230,238,248,0.7); }
-  .dark-mode .search-result-meaning { color: rgba(230,238,248,0.75); }
+  .dark-mode .search-bar-container .search-result-item {
+    background: transparent;
+    color: var(--Text);
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+  .dark-mode .search-bar-container .search-result-item:hover { background: rgba(255,255,255,0.02); }
+  .dark-mode .search-bar-container .result-title { color: var(--Primary); }
+  .dark-mode .search-bar-container .result-description, .dark-mode .search-bar-container .result-cluster { color: rgba(255,255,255,0.75); }
+  .dark-mode .search-bar-container .search-icon { color: rgba(255,255,255,0.8); }
 
   /* popup adjustments */
   .dark-mode .practice-popup { background: #0b1624; color: var(--Text); box-shadow: 0 12px 40px rgba(2,6,23,0.75); }
