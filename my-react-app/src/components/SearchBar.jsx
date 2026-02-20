@@ -141,7 +141,7 @@ const SearchBar = () => {
         onChange={(e) => handleSearch(e.target.value)}
         onFocus={() => searchQuery.trim() && setShowResults(true)}
       />
-      <span className="search-icon">🔍</span>
+      {!searchQuery && <span className="search-icon">🔍</span>}
 
       {showResults && (
         <div className="search-results-dropdown">
