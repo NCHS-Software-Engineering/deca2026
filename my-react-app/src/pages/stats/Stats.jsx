@@ -23,7 +23,7 @@ const Stats = () => {
   }, []);
 
   return (
-    <div>
+    <div className="stats-container">
       <h1 className="Header">STATS</h1>
       {loading ? (
         <p>Loading...</p>
@@ -34,6 +34,7 @@ const Stats = () => {
           <thead>
             <tr>
               <th>ID</th>
+              <th>Name</th>
               <th>Time (seconds)</th>
               <th>Number of Cards</th>
               <th>Average Time/Card (seconds)</th>
@@ -44,6 +45,7 @@ const Stats = () => {
             {stats.map((s, index) => (
               <tr key={index}>
                 <td>{s.ID}</td>
+                <td>{s.name}</td>
                 <td>{s.Time}</td>
                 <td>{s.NumCards}</td>
                 <td>{typeof s.AvgTime === 'number' ? s.AvgTime.toFixed(2) : s.AvgTime}</td>

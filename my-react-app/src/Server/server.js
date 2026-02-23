@@ -255,8 +255,9 @@ app.get('/api/users', async (req, res) => {
 app.get('/api/stats', async (req, res) => {
   try {
     const sql = `
-      SELECT ID, Time, NumCards, AvgTime, stat_date
-      FROM Stats
+      SELECT s.ID, s.Time, s.NumCards, s.AvgTime, s.stat_date, u.name
+      FROM Stats s
+      LEFT JOIN Users u ON s.ID = u.google_id
     `;
     const [results] = await pool.query(sql);
     res.json(results);
