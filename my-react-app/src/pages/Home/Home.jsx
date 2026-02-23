@@ -2,14 +2,24 @@ import './Home.css';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import promo from '../../images/DECA-promo-1.webp';
+import promo2 from '../../images/promo2.jpeg';
+import promo3 from '../../images/promo3.jpg';
 import scrollTopImage from '../../images/your-scroll-image.png';
 import { useNavigate } from "react-router-dom";
+
+// Slideshow images array - add more images here
+const slideshowImages = [
+  promo,
+  promo2, // Replace with additional images
+  promo3, // Replace with additional images
+];
 
 function Home() {
   const [unlocked, setUnlocked] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const [error, setError] = useState('');
   const [correctPassword, setCorrectPassword] = useState('');
+  const [currentSlide, setCurrentSlide] = useState(0);
   
 
   useEffect(() => {
@@ -45,6 +55,25 @@ function Home() {
     window.addEventListener("scroll", toggleVisibility);
     return () => window.removeEventListener("scroll", toggleVisibility);
   }, []);
+
+  // Auto-advance slideshow every 5 seconds
+  useEffect(() => {
+    if (!unlocked) return;
+    
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slideshowImages.length);
+    }, 5000); // 5 seconds
+
+    return () => clearInterval(interval);
+  }, [unlocked]);
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % slideshowImages.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + slideshowImages.length) % slideshowImages.length);
+  };
 
   const navigate = useNavigate();
 
@@ -101,7 +130,28 @@ function Home() {
           </p>
         </div>
         <div className="right-square">  
-          <img src={promo} alt="" className="square-image" />
+          <div className="slideshow-container">
+            <img src={slideshowImages[currentSlide]} alt="DECA Promo" className="square-image" />
+            
+            {/* Navigation buttons */}
+            <button className="slideshow-prev" onClick={prevSlide}>
+              ❮
+            </button>
+            <button className="slideshow-next" onClick={nextSlide}>
+              ❯
+            </button>
+            
+            {/* Slide indicators */}
+            <div className="slideshow-dots">
+              {slideshowImages.map((_, index) => (
+                <span
+                  key={index}
+                  className={`dot ${index === currentSlide ? 'active' : ''}`}
+                  onClick={() => setCurrentSlide(index)}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
       
