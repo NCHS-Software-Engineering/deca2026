@@ -9,6 +9,7 @@ import ProfileImage from '../../images/ProfileImageFile.webp';
 const Header = () => {
   const [userName, setUserName] = useState('');
   const [darkMode, setDarkMode] = useState(false);
+  const [profilePicture, setProfilePicture] = useState(ProfileImage);
 
   useEffect(() => {
     try {
@@ -18,6 +19,14 @@ const Header = () => {
         // Try different name fields that might exist
         const name = parsed.name || parsed.given_name || parsed.email?.split('@')[0] || 'User';
         setUserName(name);
+        
+        // Check for custom profile picture first, then Google picture, then default
+        const customPicture = localStorage.getItem('customProfilePicture');
+        if (customPicture) {
+          setProfilePicture(customPicture);
+        } else if (parsed.pictureUrl) {
+          setProfilePicture(parsed.pictureUrl);
+        }
       }
 
       // initialize dark-mode from localStorage
@@ -29,6 +38,57 @@ const Header = () => {
     } catch (e) {
       // ignore
     }
+
+    // Listen for storage changes to update profile picture dynamically
+    const handleStorageChange = (e) => {
+      if (e.key === 'customProfilePicture') {
+        if (e.newValue) {
+          setProfilePicture(e.newValue);
+        } else {
+          // Picture was removed, revert to Google or default
+          try {
+            const saved = localStorage.getItem('user');
+            if (saved) {
+              const parsed = JSON.parse(saved);
+              setProfilePicture(parsed.pictureUrl || ProfileImage);
+            } else {
+              setProfilePicture(ProfileImage);
+            }
+          } catch (err) {
+            setProfilePicture(ProfileImage);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Custom event for same-tab updates
+    const handleCustomEvent = () => {
+      const customPicture = localStorage.getItem('customProfilePicture');
+      if (customPicture) {
+        setProfilePicture(customPicture);
+      } else {
+        try {
+          const saved = localStorage.getItem('user');
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            setProfilePicture(parsed.pictureUrl || ProfileImage);
+          } else {
+            setProfilePicture(ProfileImage);
+          }
+        } catch (err) {
+          setProfilePicture(ProfileImage);
+        }
+      }
+    };
+
+    window.addEventListener('profilePictureChanged', handleCustomEvent);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('profilePictureChanged', handleCustomEvent);
+    };
   }, []);
 
   return (
@@ -53,7 +113,7 @@ const Header = () => {
         <div className="profile-control">
           <Link to="profile" className="profile-button">
             {userName && <span className="profile-name">{userName}</span>}
-            <img src={ProfileImage} width="60" height="60" alt="Profile Button" />
+            <img src={profilePicture} width="60" height="60" alt="Profile Button" />
           </Link>
 
           <button
