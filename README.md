@@ -1,6 +1,6 @@
 ****DECApp READ ME****
 
-Overview: The app is a study tool for DECA members at NCHS. After entering the password they have access to all of the career clusters to study the performance indicators they need to know for DECA. All of the performance indicators and their meanings can be edited with an edit mode for all who have "teacher_override" in the privileges column of the user table. People with teacher override also have the power to change the password to the app. Logging in allows those with teacher override to edit, for students it says the last flashcard they were on and in the future will save the edit stats.
+Overview: The app is a study tool for DECA members at NCHS. After entering the password they have access to all of the career clusters to study the performance indicators they need to know for DECA. All of the performance indicators and their meanings can be edited with an edit mode for all who have "teacher_override" in the privileges column of the user table. People with teacher override also have the power to change the password to the app. Logging in allows those with teacher override to edit, for students it saves the last flashcard they were on and in the future will save the edit stats.
 
 Platform Requirements: Windows, VSCode, React, Node Js
 
@@ -23,6 +23,7 @@ Instructions to run the app:
 5. In terminal one enter: nodemon server.js or node server.js
 6. In terminal two enter: cd my-react-app
 7. In terminal two enter: npm run
+(note for 7): use "npm run start" (no quotes) instead. if it gives a react-scripts error, do "npm install"
 Note: If every step works correctly it should open up a tab in google automatically called localhost:3000
 Note: To stop running either the server click on the corresponding terminal and hit ctrl+c
 
@@ -44,4 +45,4 @@ Users: Stores all of the user data in the database, the data is set when the use
 
 ****NOTE: To give someone edit access you need to put teacher_override in the privileges column of the user table
 
-Know Issues: The server crashes on the official server after an unknown ammount of time.
+Know Issues: The server crashes on the official server after an unknown amount of time.

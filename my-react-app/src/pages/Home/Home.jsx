@@ -2,14 +2,24 @@ import './Home.css';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import promo from '../../images/DECA-promo-1.webp';
+import promo2 from '../../images/promo2.jpeg';
+import promo3 from '../../images/promo3.jpg';
 import scrollTopImage from '../../images/your-scroll-image.png';
 import { useNavigate } from "react-router-dom";
+
+// Slideshow images array - add more images here
+const slideshowImages = [
+  promo,
+  promo2, // Replace with additional images
+  promo3, // Replace with additional images
+];
 
 function Home() {
   const [unlocked, setUnlocked] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const [error, setError] = useState('');
   const [correctPassword, setCorrectPassword] = useState('');
+  const [currentSlide, setCurrentSlide] = useState(0);
   
 
   useEffect(() => {
@@ -45,6 +55,25 @@ function Home() {
     window.addEventListener("scroll", toggleVisibility);
     return () => window.removeEventListener("scroll", toggleVisibility);
   }, []);
+
+  // Auto-advance slideshow every 5 seconds
+  useEffect(() => {
+    if (!unlocked) return;
+    
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slideshowImages.length);
+    }, 5000); // 5 seconds
+
+    return () => clearInterval(interval);
+  }, [unlocked]);
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % slideshowImages.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + slideshowImages.length) % slideshowImages.length);
+  };
 
   const navigate = useNavigate();
 
@@ -101,38 +130,60 @@ function Home() {
           </p>
         </div>
         <div className="right-square">  
-          <img src={promo} alt="" className="square-image" />
+          <div className="slideshow-container">
+            <img src={slideshowImages[currentSlide]} alt="DECA Promo" className="square-image" />
+            
+            {/* Navigation buttons */}
+            <button className="slideshow-prev" onClick={prevSlide}>
+              ❮
+            </button>
+            <button className="slideshow-next" onClick={nextSlide}>
+              ❯
+            </button>
+            
+            {/* Slide indicators */}
+            <div className="slideshow-dots">
+              {slideshowImages.map((_, index) => (
+                <span
+                  key={index}
+                  className={`dot ${index === currentSlide ? 'active' : ''}`}
+                  onClick={() => setCurrentSlide(index)}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
       
       <div className="selector-container">
-        <button className="selector-box business" onClick={() => handleClick("Business Management and Administration", "var(--Color-Business)", "Business")}>
-          <h3>Business Management & Administration</h3>
+        <button className="selector-box-left-end business" onClick={() => handleClick("Business Management and Administration", "var(--Color-Business)", "Business")}>
+          <h2>Business Management & Administration</h2>
         </button>
 
         <button className="selector-box entrepreneurship" onClick={() => handleClick("Entrepreneurship", "var(--Color-Entrepreneurship)", "Entrepreneurship")}>
-          <h3>Entrepreneurship</h3>
+          <h2>Entrepreneurship</h2>
         </button>
 
         <button className="selector-box finance" onClick={() => handleClick("Finance", "var(--Color-Finance)", "Finance")}>
-          <h3>Finance</h3>
+          <h2>Finance</h2>
         </button>
 
         <button className="selector-box hospitality" onClick={() => handleClick("Hospitality and Tourism", "var(--Color-Hospitality)", "Hospitality")}>
-          <h3>Hospitality and Tourism</h3>
+          <h2>Hospitality and Tourism</h2>
         </button>
 
         <button className="selector-box marketing" onClick={() => handleClick("Marketing", "var(--Color-Marketing)", "Marketing")}>
-          <h3>Marketing</h3>
+          <h2>Marketing</h2>
         </button>
 
-        <button className="selector-box personal-finance" onClick={() => handleClick("Personal Financial Literacy", "var(--Color-Personal-Finance)", "FinancialLiteracy")}>
-          <h3>Personal Financial Literacy</h3>
+        <button className="selector-box-right-end personal-finance" onClick={() => handleClick("Personal Financial Literacy", "var(--Color-Personal-Finance)", "FinancialLiteracy")}>
+          <h2>Personal Financial Literacy</h2>
         </button>
       </div>
 
       <div className = "names-2025">
-          <h4>Henry Allman '25, Bijoux Stilson '26, Robbie Ruthig '26</h4>
+          <h4>2024-2025 Dev Team: Henry Allman '25, Bijoux Stilson '26, Robbie Ruthig '26</h4>
+          <h4>2025-2026 Dev Team: Shriya Kunnanath '26, Nimai Nagireddy '27, Jonathan Yuan '26</h4>
       </div>
 
 

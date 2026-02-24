@@ -1,5 +1,100 @@
+.practice-page { color: white; }
+
 .Event-Title {
   text-align: center;
+}
+
+.practice-page .Event-Title h1 { color: white; }
+
+.search-container {
+  position: relative;
+  max-width: 600px;
+  margin: 20px auto;
+  width: 90%;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 16px;
+  border: 2px solid var(--Primary); /* Light mode non-focus border */
+  border-radius: 20px;
+  outline: none;
+  transition: border-color 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.search-input:focus {
+  border-color: var(--Primary); /* Light mode focus border */
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--Primary); /* Suggested search results background, darker so white text is readable */
+  border: 2px solid rgba(255,255,255,0.08);
+  border-top: none;
+  border-radius: 0 0 20px 20px;
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.search-result-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  color: white; /* make text white */
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-item:hover {
+  background-color: rgba(255,255,255,0.04);
+}
+
+.search-result-item.no-results {
+  text-align: center;
+  color: #999;
+  cursor: default;
+  padding: 20px 16px;
+}
+
+.search-result-item.no-results:hover {
+  background-color: white;
+}
+
+.search-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.search-result-header strong {
+  color: white; /* override for dark/dominant search-results */
+  font-weight: bold;
+}
+
+.search-results .search-result-index {
+  font-size: 12px;
+  color: rgba(255,255,255,0.85);
+  background-color: rgba(255,255,255,0.05);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.search-result-meaning {
+  font-size: 14px;
+  color: white; /* Definition text color */
+  line-height: 1.4;
 }
 
 .Flash-Card-Body {
@@ -29,6 +124,87 @@
   width: 100%; /* Ensures it spans the full width of the container */
 }
 
+/* Popup styles for practice page */
+.practice-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 200ms ease-out;
+}
+
+.practice-popup {
+  background: rgba(0,0,0,0.6); /* darker so white text reads well */
+  padding: 20px 24px;
+  border-radius: 10px;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+  text-align: center;
+  color: white;
+}
+
+.practice-popup h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  color: white;
+}
+
+.practice-popup .popup-cluster {
+  margin: 8px 0 16px 0;
+  color: rgba(255,255,255,0.9);
+}
+
+.practice-popup-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.popup-button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 2px solid var(--Primary);
+  background: var(--Primary);
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.popup-button.secondary {
+  background: white;
+  color: var(--Primary);
+}
+
+.popup-button.secondary:hover {
+  background: #f2f7ff;
+}
+
+/* Checkbox styles */
+.practice-popup-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.popup-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: white;
+}
+
+.popup-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
 
 .Flash-Card-Body p {
   font-size: 18px;
@@ -49,11 +225,6 @@
   margin: 0;
   cursor: pointer; /* Add this to show it's clickable */
   transition: 0.5s; /* Optional: for hover effect */
-}
-
-.selector-box:hover {
-  filter: brightness(1.2);
-  color: black;
 }
 
 .selector-box h3 {
@@ -210,8 +381,42 @@
   border-color: white;
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 @media screen and (max-width: 768px) {
+  .search-container {
+    max-width: 95%;
+    margin: 15px auto;
+  }
+
+  .search-input {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .search-results {
+    max-height: 300px;
+  }
+
+  .search-result-item {
+    padding: 10px 12px;
+  }
+
+  .search-result-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
   .Flash-Card-Body {
     width: 90%;
     min-height: 400px;
@@ -252,4 +457,59 @@
   .flash-card-counter h3 {
     font-size: 1rem;
   }
+}
+
+/* Flashcard list/table styles */
+.flashcard-list {
+  width: 90%;
+  margin: 20px auto 60px auto;
+  background: rgba(255,255,255,0.04);
+  border-radius: 12px;
+  padding: 12px;
+  overflow: auto;
+}
+.flashcard-list table {
+  width: 100%;
+  border-collapse: collapse;
+  color: white;
+}
+.flashcard-list th,
+.flashcard-list td {
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.flashcard-list th {
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+}
+.flashcard-list-row:hover { background: rgba(255,255,255,0.02); cursor: pointer; }
+.star-button {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: rgba(255,255,255,0.65);
+  padding: 4px 8px;
+}
+.star-button.starred {
+  color: #ffd54f; /* gold */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+.sort-button {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.08);
+  color: white;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.sort-button.active { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
+.show-all-button { min-width: 220px; }
+.fc-term { font-weight: 700; color: white; }
+.fc-meaning { color: rgba(255,255,255,0.85); }
+
+@media screen and (max-width: 600px) {
+  .flashcard-list th:nth-child(3), .flashcard-list td:nth-child(3) { display: none; }
 }
