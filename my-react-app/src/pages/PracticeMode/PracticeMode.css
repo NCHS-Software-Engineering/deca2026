@@ -17,7 +17,7 @@
   width: 100%;
   padding: 12px 16px;
   font-size: 16px;
-  border: 2px solid var(--Primary);
+  border: 2px solid var(--Primary); /* Light mode non-focus border */
   border-radius: 20px;
   outline: none;
   transition: border-color 0.3s ease;
@@ -25,7 +25,7 @@
 }
 
 .search-input:focus {
-  border-color: var(--Primary);
+  border-color: var(--Primary); /* Light mode focus border */
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
 }
 
@@ -34,7 +34,7 @@
   top: 100%;
   left: 0;
   right: 0;
-  background: var(--Primary); /* darker so white text is readable */
+  background: var(--Primary); /* Suggested search results background, darker so white text is readable */
   border: 2px solid rgba(255,255,255,0.08);
   border-top: none;
   border-radius: 0 0 20px 20px;
@@ -93,7 +93,7 @@
 
 .search-result-meaning {
   font-size: 14px;
-  color: #666;
+  color: white; /* Definition text color */
   line-height: 1.4;
 }
 
