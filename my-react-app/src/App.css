@@ -339,7 +339,7 @@
   .dark-mode {
     /* refined dark palette */
     --Background: #071026;
-    --Primary: #7cb5e1;      /* primary accent for controls */
+    --Primary: #11466e;      /* primary accent for controls */
     --Secondary: #398cfd;    /* secondary accent */
     --Text: #ffffff;         /* main text */
     --Text-Inverted: #071026;/* text to use on light backgrounds */
