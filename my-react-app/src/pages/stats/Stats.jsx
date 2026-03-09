@@ -48,7 +48,7 @@ const Stats = () => {
                 <td>{s.name}</td>
                 <td>{s.Time}</td>
                 <td>{s.NumCards}</td>
-                <td>{typeof s.AvgTime === 'number' ? s.AvgTime.toFixed(2) : s.AvgTime}</td>
+                <td>{typeof s.AvgTime === 'number' ? s.AvgTime.toFixed(3) : s.AvgTime}</td>
                 <td>{s.stat_date}</td>
               </tr>
             ))}
