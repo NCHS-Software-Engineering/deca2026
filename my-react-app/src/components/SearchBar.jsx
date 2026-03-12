@@ -71,7 +71,7 @@ const SearchBar = () => {
 
       // Try to search flashcards
       try {
-        const piRes = await axios.get("https://deca.redhawks.us/api/PIs", {
+        const piRes = await axios.get("https://decatest.redhawks.us/api/PIs", {
           params: { event: "Marketing" } // Default cluster; adjust as needed
         });
 

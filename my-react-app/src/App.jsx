@@ -8,7 +8,7 @@ function App() {
   const setData = useState([]);
   
   useEffect(() => {
-    fetch('https://deca.redhawks.us/api/branches')
+    fetch('https://decatest.redhawks.us/api/branches')
       .then((res) => res.json())
       .then((data) => {
         setBranches(data);
@@ -23,7 +23,7 @@ function App() {
   }, [selected]);
 
   const fetchPIs = (branchNum) => {
-    fetch('https://deca.redhawks.us/api/PIs', {
+    fetch('https://decatest.redhawks.us/api/PIs', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
