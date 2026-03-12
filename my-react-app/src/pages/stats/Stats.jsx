@@ -11,7 +11,7 @@ const Stats = () => {
       .then(res => {
         if (!res.ok) throw new Error('Network response was not ok');
         return res.json();
-      })
+      })  
       .then(data => {
         setStats(data);
         setLoading(false);
