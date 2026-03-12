@@ -15,7 +15,7 @@ Note: The passwords are not in any quotes and their is no end line character, si
 
 Note: It is highly recommended that you use nodemon over node as nodemon will auto update when you make changes to the server code while node will not, the install package may not automatically install nodemon, if you are having issues try using npm install '--save-dev nodemon' in the console, if that doesn't work you can use 'npm install -g nodemon' but that will install it globally on your computer
 
-Instructions to run the app:
+Instructions to run the app (2024-2025):
 1. Open up two separate terminals
 2. In terminal one enter: cd my-react-app
 3. In terminal one enter: cd src
@@ -26,6 +26,13 @@ Instructions to run the app:
 (note for 7): use "npm run start" (no quotes) instead. if it gives a react-scripts error, do "npm install"
 Note: If every step works correctly it should open up a tab in google automatically called localhost:3000
 Note: To stop running either the server click on the corresponding terminal and hit ctrl+c
+
+Instructions to run the app (2025-2026):
+1. In a terminal enter: cd my-react-app
+2. In the same terminal enter: npm run start
+Note: If every step works correctly it should open up a tab in google automatically called localhost:3000
+Note: To stop running either the server click on the corresponding terminal and hit ctrl+c
+
 
 APP Structure:
 components: All of the components which will be used on more than one page are in the components folder. Protected route makes it so that people cannot brute force open a certain page by typing the url into the search bar if they either haven't put the password in or don't have edit access.
