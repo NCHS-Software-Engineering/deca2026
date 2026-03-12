@@ -28,10 +28,18 @@ Note: If every step works correctly it should open up a tab in google automatica
 Note: To stop running either the server click on the corresponding terminal and hit ctrl+c
 
 Instructions to run the app (2025-2026):
+front-end:
 1. In a terminal enter: cd my-react-app
 2. In the same terminal enter: npm run start
 Note: If every step works correctly it should open up a tab in google automatically called localhost:3000
-Note: To stop running either the server click on the corresponding terminal and hit ctrl+c
+
+back-end:
+1. In a terminal enter: cd my-react-app
+2. Enter: cd src
+3. Enter: cd Server
+4. Enter: node server.js
+5. open your browser and enter: http://localhost:3000/ into the search bar
+Note: To stop running the server click on the corresponding terminal and hit ctrl+c
 
 
 APP Structure:
