@@ -33,7 +33,7 @@ const Stats = () => {
         <table className="stats-table">
           <thead>
             <tr>
-              <th>ID</th>
+              <th>Email Address</th>
               <th>Name</th>
               <th>Time (seconds)</th>
               <th>Number of Cards</th>
@@ -44,7 +44,7 @@ const Stats = () => {
           <tbody>
             {stats.map((s, index) => (
               <tr key={index}>
-                <td>{s.ID}</td>
+                <td>{s.email ?? "N/A"}</td>
                 <td>{s.name}</td>
                 <td>{s.Time}</td>
                 <td>{s.NumCards}</td>

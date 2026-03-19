@@ -290,7 +290,7 @@ app.get('/api/users', async (req, res) => {
 app.get('/api/stats', async (req, res) => {
   try {
     const sql = `
-      SELECT s.ID, s.Time, s.NumCards, ROUND(s.AvgTime, 3) as AvgTime, s.stat_date, u.name
+      SELECT u.email AS email, s.Time, s.NumCards, ROUND(s.AvgTime, 3) as AvgTime, s.stat_date, u.name
       FROM Stats s
       LEFT JOIN Users u ON s.ID = u.google_id
     `;
