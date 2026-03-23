@@ -36,7 +36,7 @@ function Profile() {
       }
 
       // Send user data + role to backend
-      const res = await axios.post('https://deca.redhawks.us/api/login', {
+      const res = await axios.post('https://decatest.redhawks.us/api/login', {
         googleId: userObject.sub,
         name: userObject.name,
         email: userObject.email,

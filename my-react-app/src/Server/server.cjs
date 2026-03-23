@@ -18,22 +18,12 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
+export default pool;
+
 (async () => {
   try {
     const connection = await pool.getConnection();
     console.log("✅ Connected to the database.");
-
-    // Ensure per-cluster last-index table exists so progress can be tracked per career cluster
-    const createTableSql = `
-      CREATE TABLE IF NOT EXISTS user_last_index (
-        google_id VARCHAR(255) NOT NULL,
-        career_cluster VARCHAR(255) NOT NULL,
-        last_index INT DEFAULT 0,
-        PRIMARY KEY (google_id, career_cluster)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-    `;
-    await connection.query(createTableSql);
-
     connection.release();
   } catch (err) {
     console.error("❌ Failed to connect to the database:", err);
@@ -54,18 +44,8 @@ app.get('/api/PIs', async (req, res) => {
 
 app.get('/api/last-index', async (req, res) => {
   try {
-    const id = req.query.googleId;
-    const careerCluster = req.query.careerCluster;
-
-    // If a careerCluster is provided, try to return the per-cluster value first.
-    if (careerCluster) {
-      const sqlCluster = 'SELECT last_index FROM user_last_index WHERE google_id = ? AND career_cluster = ?';
-      const [clusterRows] = await pool.query(sqlCluster, [id, careerCluster]);
-      if (clusterRows.length > 0) return res.json(clusterRows);
-      // fall back to the global Users.last_index if no per-cluster row exists
-    }
-
     const sql = 'SELECT last_index FROM deca.Users WHERE google_id = ?';
+    const id = req.query.googleId;
     const [data] = await pool.query(sql, [id]);
     res.json(data);
   } catch (err) {
@@ -75,21 +55,8 @@ app.get('/api/last-index', async (req, res) => {
 
 app.post('/api/last-index', async (req, res) => {
   try {
-    const { googleId, lastIndex, careerCluster } = req.body;
-
-    // If a careerCluster is provided, upsert into the per-cluster table.
-    if (careerCluster) {
-      const sql = `
-        INSERT INTO user_last_index (google_id, career_cluster, last_index)
-        VALUES (?, ?, ?)
-        ON DUPLICATE KEY UPDATE last_index = VALUES(last_index)
-      `;
-      const [result] = await pool.query(sql, [googleId, careerCluster, lastIndex]);
-      return res.json(result);
-    }
-
-    // Backward-compatible behavior: update the global users.last_index
     const sql = 'UPDATE Users SET last_index=? WHERE google_id = ?';
+    const { googleId, lastIndex } = req.body;
     const [data] = await pool.query(sql, [lastIndex, googleId]);
     res.json(data);
   } catch (err) {
@@ -290,9 +257,8 @@ app.get('/api/users', async (req, res) => {
 app.get('/api/stats', async (req, res) => {
   try {
     const sql = `
-      SELECT u.email AS email, s.Time, s.NumCards, ROUND(s.AvgTime, 3) as AvgTime, s.stat_date, u.name
-      FROM Stats s
-      LEFT JOIN Users u ON s.ID = u.google_id
+      SELECT ID, Time, NumCards, AvgTime, stat_date
+      FROM Stats
     `;
     const [results] = await pool.query(sql);
     res.json(results);
@@ -321,12 +287,12 @@ const path = require('path');
 
 
 
-// Serve React build
-app.use(express.static(path.join(__dirname, '../../build')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Catch-all to handle React routes (reloads, deep links)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../build/index.html'));
+app.get('{*splat}', (req, res) => {
+  // If the request is not for an API route, serve the React app
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 

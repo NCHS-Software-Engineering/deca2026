@@ -163,7 +163,7 @@ if (storedUserRaw) {
   };
   
 
-  //https://deca.redhawks.us/
+  //https://decatest.redhawks.us/
 
   const fetchData = async () => {
     try {
@@ -171,14 +171,14 @@ if (storedUserRaw) {
       let index = 0;
   
       if (user?.googleId) {
-        const knownRes = await axios.get("https://deca.redhawks.us/api/know-this", {
+        const knownRes = await axios.get("https://decatest.redhawks.us/api/know-this", {
           params: {
             googleId: user.googleId,
             careerCluster: eventCluster,
           },
         });
   
-        const indexRes = await axios.get("https://deca.redhawks.us/api/last-index", {
+        const indexRes = await axios.get("https://decatest.redhawks.us/api/last-index", {
           params: { googleId: user.googleId, careerCluster: eventCluster },
         });
   
@@ -191,7 +191,7 @@ if (storedUserRaw) {
         setKnownIndicators([]);
       }
   
-      const piRes = await axios.get("https://deca.redhawks.us/api/PIs", {
+      const piRes = await axios.get("https://decatest.redhawks.us/api/PIs", {
         params: { event: eventCluster },
       });
   
@@ -272,7 +272,7 @@ if (storedUserRaw) {
 
     if (timeSpent >= 5 && user?.googleId) {
       try {
-        await fetch("https://deca.redhawks.us/api/update-stats", {
+        await fetch("https://decatest.redhawks.us/api/update-stats", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -288,7 +288,7 @@ if (storedUserRaw) {
     
     if (user?.googleId) {
       try {
-         await fetch("https://deca.redhawks.us/api/last-index", { 
+         await fetch("https://decatest.redhawks.us/api/last-index", { 
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -339,7 +339,7 @@ if (storedUserRaw) {
 
     if (user?.googleId) {
       try {
-         await fetch("https://deca.redhawks.us/api/last-index", { 
+         await fetch("https://decatest.redhawks.us/api/last-index", { 
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -404,7 +404,7 @@ if (storedUserRaw) {
         // persist restored index for logged-in users (matches Next/Back behavior)
         if (user?.googleId) {
           try {
-            fetch("https://deca.redhawks.us/api/last-index", {
+            fetch("https://decatest.redhawks.us/api/last-index", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -459,7 +459,7 @@ if (storedUserRaw) {
     }
 
     try {
-      await fetch("https://deca.redhawks.us/api/know-this", {
+      await fetch("https://decatest.redhawks.us/api/know-this", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -578,7 +578,7 @@ if (storedUserRaw) {
             onClick={async (e) => {
               e.stopPropagation();
               try {
-                await axios.delete("https://deca.redhawks.us/api/know-this", {
+                await axios.delete("https://decatest.redhawks.us/api/know-this", {
                   params: {
                     googleId: user.googleId,
                     cluster: eventCluster, // <--- optional for scoped deletion
