@@ -8,6 +8,8 @@ export default function Tests() {
         { id: 1, name: 'Business Management & Administration', url: 'https://drive.google.com/file/d/1XkvwWt0N3ovx1rlQ3UxZlBum3E_7Q-PX/preview' },
         { id: 2, name: 'Document 2', url: 'https://drive.google.com/file/d/file_id/preview' },
         { id: 3, name: 'Document 3', url: 'https://drive.google.com/file/d/file_id/preview' },
+        { id: 4, name: 'Document 4', url: 'https://drive.google.com/file/d/file_id/preview' },
+        { id: 5, name: 'Document 5', url: 'https://drive.google.com/file/d/file_id/preview' },
     ];
 
     return (
@@ -33,6 +35,8 @@ export default function Tests() {
                         src={selectedFile.url}
                         title={selectedFile.name}
                         className="file-embed"
+                        width={800}
+                        height={600}
                     />
                 </div>
             )}

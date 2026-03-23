@@ -6,7 +6,8 @@
     margin: 20px 0;
 }
 
-.document-card {
+
+.document-card { /* The white boxes you click */
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 20px;
@@ -18,12 +19,12 @@
     text-align: center;
 }
 
-.document-card:hover {
+.document-card:hover { /* hover effect for the white boxes */
     transform: translateY(-4px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.document-icon {
+.document-icon { 
     font-size: 48px;
     margin-bottom: 15px;
 }
