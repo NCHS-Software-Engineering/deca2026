@@ -42,7 +42,7 @@ export default function Tests () {
                 <div>
                     <h2>If you'd like to download this file, please click the download button below: </h2>
                     
-                    <a href={selectedFile.url.replace('/preview', '/uc?export=download')} download>
+                    <a href={selectedFile.url.replace('/file/d/', '/uc?export=download&id=').replace('/preview', '')} download>
                         <button className="download-button">Download {selectedFile.name}</button>
                     </a>
                 </div>
