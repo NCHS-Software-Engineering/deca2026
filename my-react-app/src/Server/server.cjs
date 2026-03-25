@@ -24,6 +24,24 @@ export default pool;
   try {
     const connection = await pool.getConnection();
     console.log("✅ Connected to the database.");
+
+    const createReportsTableSql = `
+      CREATE TABLE IF NOT EXISTS flashcard_reports (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        reporter_google_id VARCHAR(255) NULL,
+        reporter_name VARCHAR(255) NULL,
+        reporter_email VARCHAR(255) NULL,
+        career_cluster VARCHAR(255) NOT NULL,
+        performance_indicator TEXT NOT NULL,
+        meaning TEXT NULL,
+        issue_type VARCHAR(100) NOT NULL,
+        notes TEXT NOT NULL,
+        status VARCHAR(30) NOT NULL DEFAULT 'open',
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `;
+    await connection.query(createReportsTableSql);
+
     connection.release();
   } catch (err) {
     console.error("❌ Failed to connect to the database:", err);
@@ -280,6 +298,73 @@ app.post('/api/password', async (req, res) => {
   } catch (err) {
     console.error("Error updating password:", err);
     res.status(500).json({ error: "Database error" });
+  }
+});
+
+app.post('/api/flashcard-reports', async (req, res) => {
+  try {
+    const {
+      reporterGoogleId,
+      reporterName,
+      reporterEmail,
+      careerCluster,
+      performanceIndicator,
+      meaning,
+      issueType,
+      notes,
+    } = req.body;
+
+    if (!careerCluster || !performanceIndicator || !issueType || !notes) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const insertSql = `
+      INSERT INTO flashcard_reports
+      (reporter_google_id, reporter_name, reporter_email, career_cluster, performance_indicator, meaning, issue_type, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const [result] = await pool.query(insertSql, [
+      reporterGoogleId || null,
+      reporterName || null,
+      reporterEmail || null,
+      careerCluster,
+      performanceIndicator,
+      meaning || null,
+      issueType,
+      notes,
+    ]);
+
+    res.status(201).json({ id: result.insertId, createdAt: new Date().toISOString() });
+  } catch (err) {
+    console.error('Error submitting flashcard report:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.get('/api/flashcard-reports', async (req, res) => {
+  try {
+    const status = req.query.status;
+
+    let sql = `
+      SELECT id, reporter_google_id, reporter_name, reporter_email, career_cluster,
+             performance_indicator, meaning, issue_type, notes, status, created_at
+      FROM flashcard_reports
+    `;
+    const params = [];
+
+    if (status) {
+      sql += ' WHERE status = ?';
+      params.push(status);
+    }
+
+    sql += ' ORDER BY created_at DESC LIMIT 200';
+
+    const [rows] = await pool.query(sql, params);
+    res.json(rows);
+  } catch (err) {
+    console.error('Error fetching flashcard reports:', err);
+    res.status(500).json({ error: 'Database error' });
   }
 });
 

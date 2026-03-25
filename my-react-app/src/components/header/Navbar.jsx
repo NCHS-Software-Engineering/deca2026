@@ -27,6 +27,10 @@ const Navbar = () => {
       {
         title: "STATS",
         url: "/Stats",
+      },
+      {
+        title: "REPORTS",
+        url: "/flashcard-reports",
       }
     ];
 
