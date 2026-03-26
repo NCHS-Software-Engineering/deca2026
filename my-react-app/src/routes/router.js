@@ -16,6 +16,7 @@ import Home from "../pages/Home/Home";
 import Edit from "../pages/Edit/Edit";
 import ProtectedRoute from "../components/ProtectedRoute";
 import ProtectedRouteEdit from "../components/ProtectedRouteEdit";
+import FlashcardReports from "../pages/FlashcardReports/FlashcardReports";
 
 
 const router = createBrowserRouter([
@@ -54,6 +55,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Services />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "flashcard-reports",
+        element: (
+          <ProtectedRoute>
+            <FlashcardReports />
           </ProtectedRoute>
         ),
       },

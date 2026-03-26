@@ -15,6 +15,7 @@ const SearchBar = () => {
     { title: 'Home', path: '/', type: 'page' },
     { title: 'Practice', path: '/Practice', type: 'page' },
     { title: 'Stats', path: '/Stats', type: 'page' },
+    { title: 'Reports', path: '/flashcard-reports', type: 'page' },
     { title: 'Edit', path: '/edit', type: 'page' },
     { title: 'Profile', path: '/profile', type: 'page' },
   ];

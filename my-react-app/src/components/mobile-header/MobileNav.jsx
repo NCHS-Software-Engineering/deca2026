@@ -18,6 +18,10 @@ const menuItemsData = [
       {
         title: "STATS",
         url: "/Stats",
+      },
+      {
+        title: "REPORTS",
+        url: "/flashcard-reports",
       }
     
   
