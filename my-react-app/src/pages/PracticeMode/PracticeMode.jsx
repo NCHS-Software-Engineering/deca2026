@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import "./PracticeMode.css";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Practice = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const [eventData, setEventData] = useState("Example Event");
   const [eventColor, setEventColor] = useState("var(--Primary)");
@@ -604,6 +605,26 @@ if (storedUserRaw) {
             }} 
           >
             I Know This
+          </button>
+        )}
+
+        {data.length > 0 && (
+          <button
+            className="report-flag-button"
+            onClick={(e) => {
+              e.stopPropagation();
+              const currentCard = data[currentIndex] || {};
+              const params = new URLSearchParams({
+                cluster: eventCluster || "",
+                pi: currentCard.PerformanceIndicator || "",
+                meaning: currentCard.Meaning || "",
+              });
+              navigate(`/flashcard-reports?${params.toString()}`);
+            }}
+            aria-label="Report this flashcard"
+            title="Report this flashcard"
+          >
+            🚩
           </button>
         )}
 
