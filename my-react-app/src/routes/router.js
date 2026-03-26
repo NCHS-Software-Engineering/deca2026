@@ -13,6 +13,7 @@ import Profile from "../pages/profile/profile";
 import Practice from "../pages/PracticeMode/PracticeMode";
 import MyChapter from "../pages/not-implemented/myChapter";
 import Home from "../pages/Home/Home";
+import Tests from "../pages/Tests/Tests";
 import Edit from "../pages/Edit/Edit";
 import ProtectedRoute from "../components/ProtectedRoute";
 import ProtectedRouteEdit from "../components/ProtectedRouteEdit";
@@ -47,6 +48,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Stats />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "Tests",
+        element: (
+          <ProtectedRoute>
+            <Tests />
           </ProtectedRoute>
         ),
       },
