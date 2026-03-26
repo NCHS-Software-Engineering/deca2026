@@ -31,6 +31,10 @@ const Navbar = () => {
       {
         title: "TESTS",
         url: "/Tests",
+      },
+      {
+        title: "REPORTS",
+        url: "/flashcard-reports",
       }
     ];
 
