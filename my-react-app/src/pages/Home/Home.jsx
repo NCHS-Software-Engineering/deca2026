@@ -1,9 +1,23 @@
 import './Home.css';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import promo from '../../images/DECA-promo-1.webp';
-import promo2 from '../../images/promo2.jpeg';
-import promo3 from '../../images/promo3.jpg';
+import promo from '../../images/deca1.jpg';
+import promo2 from '../../images/deca2.jpeg';
+import promo3 from '../../images/deca3.jpg';
+import promo4 from '../../images/deca4.jpg';
+import promo5 from '../../images/deca5.jpg';
+import promo6 from '../../images/deca6.jpeg';
+import promo7 from '../../images/deca7.jpeg';
+import promo8 from '../../images/deca8.jpeg';
+import promo9 from '../../images/deca9.jpeg';
+import promo10 from '../../images/deca10.jpeg';
+import promo11 from '../../images/deca11.jpeg';
+import promo12 from '../../images/deca12.jpeg';
+import promo13 from '../../images/deca13.jpeg';
+import promo14 from '../../images/deca14.jpeg';
+
+
+
 import scrollTopImage from '../../images/your-scroll-image.png';
 import { useNavigate } from "react-router-dom";
 
@@ -11,7 +25,18 @@ import { useNavigate } from "react-router-dom";
 const slideshowImages = [
   promo,
   promo2, // Replace with additional images
-  promo3, // Replace with additional images
+  promo3,
+  promo4,
+  promo5,
+  promo6,
+  promo7,
+  promo8,
+  promo9,
+  promo10,
+  promo11,
+  promo12,
+  promo13,
+  promo14,
 ];
 
 function Home() {
