@@ -30,6 +30,7 @@ const FlashcardReports = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [updatingStatusIds, setUpdatingStatusIds] = useState({});
 
   const rawUser = localStorage.getItem("user");
   const user = useMemo(() => {
@@ -153,6 +154,62 @@ const FlashcardReports = () => {
     const next = [report, ...reports];
     setReports(next);
     localStorage.setItem(REPORT_STORAGE_KEY, JSON.stringify(next));
+  };
+
+  const getReportStatus = (report) => (report.status || "open").toLowerCase();
+
+  const updateReportStatusLocally = (reportId, nextStatus) => {
+    setReports((prev) => {
+      const next = prev.map((report) =>
+        String(report.id) === String(reportId)
+          ? {
+              ...report,
+              status: nextStatus,
+            }
+          : report
+      );
+      localStorage.setItem(REPORT_STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const handleStatusChange = async (reportId, nextStatus, reportTerm = "this report") => {
+    if (!reportId) return;
+
+    if (
+      nextStatus === "resolved" &&
+      !window.confirm(`Mark ${reportTerm} as resolved?`)
+    ) {
+      return;
+    }
+
+    setError("");
+    setSuccess("");
+    setUpdatingStatusIds((prev) => ({ ...prev, [reportId]: true }));
+
+    try {
+      const res = await fetch(`/api/flashcard-reports/${encodeURIComponent(reportId)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus }),
+      });
+
+      if (!res.ok) throw new Error("Server rejected status update");
+
+      const data = await res.json();
+      const updatedStatus = (data?.status || nextStatus).toLowerCase();
+      updateReportStatusLocally(reportId, updatedStatus);
+      setSuccess(`Report marked as ${updatedStatus}.`);
+    } catch {
+      updateReportStatusLocally(reportId, nextStatus);
+      setSuccess(`Status updated locally to ${nextStatus}.`);
+    } finally {
+      setUpdatingStatusIds((prev) => {
+        const next = { ...prev };
+        delete next[reportId];
+        return next;
+      });
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -356,7 +413,29 @@ const FlashcardReports = () => {
                       <td>{report.issue_type || report.issueType}</td>
                       <td>{report.notes}</td>
                       <td>{report.reporter_email || report.reporterEmail || report.reporter_name || report.reporterName || "N/A"}</td>
-                      <td>{report.status || "open"}</td>
+                      <td>
+                        <div className="status-actions">
+                          <span className={`status-chip status-${getReportStatus(report)}`}>
+                            {getReportStatus(report)}
+                          </span>
+                          <button
+                            type="button"
+                            className="status-toggle-button"
+                            disabled={Boolean(updatingStatusIds[report.id]) || getReportStatus(report) === "open"}
+                            onClick={() => handleStatusChange(report.id, "open", report.performance_indicator || report.performanceIndicator || "this report")}
+                          >
+                            Open
+                          </button>
+                          <button
+                            type="button"
+                            className="status-toggle-button"
+                            disabled={Boolean(updatingStatusIds[report.id]) || getReportStatus(report) === "resolved"}
+                            onClick={() => handleStatusChange(report.id, "resolved", report.performance_indicator || report.performanceIndicator || "this report")}
+                          >
+                            Resolve
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
