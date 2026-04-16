@@ -35,6 +35,7 @@ const MenuItems = ({ items, depthLevel }) => {
   }
 
   const isAdmin = user?.role === "teacher" || user?.privileges === "teacher_override";
+  //prevents forceful browsing
   const shouldShowItem = items.url !== "/edit" || isAdmin;
 
   return shouldShowItem ? (
