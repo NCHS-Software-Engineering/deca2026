@@ -129,6 +129,52 @@
   background: #f5f8fc;
 }
 
+.status-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.status-open {
+  color: #8a5a00;
+  background: #fff2cf;
+  border: 1px solid #f5d479;
+}
+
+.status-resolved {
+  color: #0f5e2a;
+  background: #dbf8e4;
+  border: 1px solid #97e6b2;
+}
+
+.status-toggle-button {
+  border: 1px solid #bdd0ea;
+  background: #f7fbff;
+  color: #1f3a5d;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.status-toggle-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
   .flashcard-reports-page {
     width: 94%;

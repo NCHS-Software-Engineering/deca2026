@@ -401,6 +401,39 @@ app.get('/api/flashcard-reports', async (req, res) => {
   }
 });
 
+app.patch('/api/flashcard-reports/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const requestedStatus = typeof req.body?.status === 'string' ? req.body.status.toLowerCase().trim() : '';
+
+    if (!['open', 'resolved'].includes(requestedStatus)) {
+      return res.status(400).json({ error: 'Status must be open or resolved' });
+    }
+
+    const updateSql = `
+      UPDATE flashcard_reports
+      SET status = ?
+      WHERE id = ?
+      LIMIT 1
+    `;
+
+    const [updateResult] = await pool.query(updateSql, [requestedStatus, id]);
+    if (updateResult.affectedRows === 0) {
+      return res.status(404).json({ error: 'Report not found' });
+    }
+
+    const [rows] = await pool.query(
+      `SELECT id, status, created_at FROM flashcard_reports WHERE id = ? LIMIT 1`,
+      [id]
+    );
+
+    res.json(rows[0] || { id, status: requestedStatus });
+  } catch (err) {
+    console.error('Error updating flashcard report status:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
 const path = require('path');
 
 
