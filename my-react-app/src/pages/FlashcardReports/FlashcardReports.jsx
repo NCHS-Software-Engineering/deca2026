@@ -12,7 +12,6 @@ const CLUSTER_OPTIONS = [
   { label: "Personal Financial Literacy", value: "FinancialLiteracy" },
 ];
 
-//hides reports page history from regular users 
 const isDeveloperUser = (user) => {
   if (!user) return false;
   return (

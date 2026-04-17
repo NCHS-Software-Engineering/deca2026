@@ -25,6 +25,10 @@ const Navbar = () => {
         url: "/Practice",
       },
       {
+        title: "STATS",
+        url: "/Stats",
+      },
+      {
         title: "TESTS",
         url: "/Tests",
       },
@@ -35,16 +39,12 @@ const Navbar = () => {
     ];
 
     // Add edit tab if user is a teacher
-    if (user && user.email == "hnallman@stu.naperville203.org") {
+    //if (user && user.email == "hnallman@stu.naperville203.org") {
       baseItems.push({
         title: "EDIT",
         url: "/edit",
       });
-      baseItems.push({
-        title: "STATS",
-        url: "/Stats",
-      })
-    }
+    //}
 
     return baseItems;
   };
