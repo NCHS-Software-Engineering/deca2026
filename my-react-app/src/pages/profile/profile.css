@@ -1,6 +1,9 @@
 .Welcome {
   text-align: center;
+}
 
+.Welcome h1 {
+  color: rgb(255, 255, 255) !important;
 }
 
 .login-container {
@@ -20,14 +23,14 @@
     max-width: 600px;
     margin: 0 auto;
     text-align: center;
-    color: rgb(0, 0, 0);
+    color: rgb(255, 255, 255) !important;
     font-family: 'Maven Pro', normal;
   }
   
   
   .profile-info h2 {
     margin-bottom: 10px;
-    color: rgb(0, 0, 0);
+    color: rgb(255, 255, 255) !important;
     font-family: 'Maven Pro', normal;
   }
   
@@ -47,6 +50,7 @@
     font-size: 20px;
     transition: 0.2s;
   }
+  
   .profile-info button:hover {
     border: 1px solid rgb(255, 255, 255);
     padding: 5px 10px;
@@ -60,94 +64,256 @@
   .Titles {
     margin: 25px 10px 0;
     text-align: left;
-    color:rgb(0, 0, 0);
+    color: rgb(255, 255, 255) !important;
     font-size: 17px;
   }
 
-  /* Account Tier Section */
-  .account-tier-section {
-    margin: 30px 0;
-    padding: 20px;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-
-  .tier-badge {
-    display: inline-flex;
+  /* Profile Picture Upload Styles */
+  .profile-picture-section {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 12px 20px;
-    border-radius: 25px;
-    font-weight: bold;
+    margin-bottom: 30px;
+  }
+
+  .profile-picture-large {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid rgb(44, 112, 204);
     margin-bottom: 20px;
-    font-size: 18px;
   }
 
-  .tier-badge.sponsor {
-    background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
-    color: white;
+  .profile-picture-controls {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
-  .tier-badge.teacher {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-  }
-
-  .tier-badge.student {
-    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-    color: #333;
-  }
-
-  .tier-icon {
-    font-size: 24px;
-  }
-
-  .tier-name {
+  .upload-button {
+    border: 1px solid rgb(44, 112, 204);
+    padding: 8px 16px;
+    font-family: 'Maven Pro', normal;
+    color: rgb(44, 112, 204);
+    background-color: rgb(255, 255, 255);
     font-size: 16px;
+    cursor: pointer;
+    transition: 0.2s;
+    border-radius: 4px;
   }
 
-  .tier-badge-premium {
-    display: inline-block;
-    background-color: rgba(255, 255, 255, 0.3);
-    padding: 4px 12px;
-    border-radius: 15px;
+  .upload-button:hover {
+    border: 1px solid rgb(255, 255, 255);
+    color: rgb(255, 255, 255);
+    background-color: rgb(44, 112, 204);
+  }
+
+  .remove-button {
+    border: 1px solid rgb(204, 44, 44);
+    padding: 8px 16px;
+    font-family: 'Maven Pro', normal;
+    color: rgb(204, 44, 44);
+    background-color: rgb(255, 255, 255);
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.2s;
+    border-radius: 4px;
+    margin: 0 !important;
+  }
+
+  .remove-button:hover {
+    border: 1px solid rgb(255, 255, 255);
+    color: rgb(255, 255, 255);
+    background-color: rgb(204, 44, 44);
+  }
+
+  /* Image Cropper Modal */
+.cropper-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.cropper-container {
+  background-color: white;
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 500px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cropper-container h3 {
+  margin: 0 0 10px 0;
+  color: rgb(44, 112, 204);
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 24px;
+}
+
+.cropper-instructions {
+  margin: 0 0 20px 0;
+  color: #666;
+  font-size: 14px;
+  text-align: center;
+}
+
+.cropper-preview {
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  background-color: #f0f0f0;
+  border: 3px solid rgb(44, 112, 204);
+  margin-bottom: 20px;
+  user-select: none;
+}
+
+.cropper-image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center center;
+  max-width: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.cropper-circle-overlay {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border: 3px solid rgb(44, 112, 204);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.cropper-controls {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.cropper-controls label {
+  color: rgb(44, 112, 204);
+  font-family: 'Maven Pro', sans-serif;
+  font-weight: bold;
+  min-width: 50px;
+}
+
+.zoom-slider {
+  flex: 1;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #ddd;
+  outline: none;
+  border-radius: 3px;
+}
+
+.zoom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: rgb(44, 112, 204);
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.zoom-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: rgb(44, 112, 204);
+  cursor: pointer;
+  border-radius: 50%;
+  border: none;
+}
+
+.cropper-buttons {
+  display: flex;
+  gap: 15px;
+  width: 100%;
+  justify-content: center;
+}
+
+.cancel-crop-button,
+.save-crop-button {
+  padding: 10px 25px;
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+  border: none;
+  font-weight: 500;
+}
+
+.cancel-crop-button {
+  background-color: #f0f0f0;
+  color: #666;
+}
+
+.cancel-crop-button:hover {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.save-crop-button {
+  background-color: rgb(44, 112, 204);
+  color: white;
+}
+
+.save-crop-button:hover {
+  background-color: rgb(34, 92, 174);
+}
+
+/* Mobile adjustments for cropper */
+@media screen and (max-width: 768px) {
+  .cropper-modal {
+    padding: 10px;
+  }
+
+  .cropper-container {
+    padding: 20px;
+  }
+
+  .cropper-preview {
+    width: 250px;
+    height: 250px;
+  }
+
+  .cropper-container h3 {
+    font-size: 20px;
+  }
+
+  .cropper-instructions {
     font-size: 12px;
-    margin-left: 10px;
-    font-weight: normal;
   }
 
-  .tier-features {
-    text-align: left;
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 15px;
-    border-radius: 8px;
+  .cropper-buttons {
+    flex-direction: column;
+    width: 100%;
   }
 
-  .tier-features h3 {
-    margin-top: 0;
-    color: #333;
-    font-size: 16px;
+  .cancel-crop-button,
+  .save-crop-button {
+    width: 100%;
   }
-
-  .tier-features ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .tier-features li {
-    padding: 8px 0;
-    color: #555;
-    font-size: 14px;
-    border-bottom: 1px solid #eee;
-  }
-
-  .tier-features li:last-child {
-    border-bottom: none;
-  }
-
-  .tier-features li.limited {
-    color: #999;
-    font-style: italic;
-  }
+}

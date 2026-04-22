@@ -13,9 +13,11 @@ import Profile from "../pages/profile/profile";
 import Practice from "../pages/PracticeMode/PracticeMode";
 import MyChapter from "../pages/not-implemented/myChapter";
 import Home from "../pages/Home/Home";
+import Tests from "../pages/Tests/Tests";
 import Edit from "../pages/Edit/Edit";
 import ProtectedRoute from "../components/ProtectedRoute";
 import ProtectedRouteEdit from "../components/ProtectedRouteEdit";
+import FlashcardReports from "../pages/FlashcardReports/FlashcardReports";
 
 
 const router = createBrowserRouter([
@@ -50,10 +52,26 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "Tests",
+        element: (
+          <ProtectedRoute>
+            <Tests />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: "services",
         element: (
           <ProtectedRoute>
             <Services />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "flashcard-reports",
+        element: (
+          <ProtectedRoute>
+            <FlashcardReports />
           </ProtectedRoute>
         ),
       },

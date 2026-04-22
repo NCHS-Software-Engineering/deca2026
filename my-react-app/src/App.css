@@ -12,7 +12,7 @@
     PARTY MODE:
     background: repeating-conic-gradient(red 0deg 10deg, yellow 10deg 20deg, blue 20deg 30deg);
     */ 
-    background: #67bed9;
+    background: var(--Background); /* IF YOU WANT TO EDIT BACKGROUND COLOR GO TO :root DO NOT EDIT THIS */
     font-family: 'Maven Pro', normal;
     
     
@@ -28,22 +28,25 @@
   .nav-area {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     max-width: 1920;
-    padding: 20px 0px;
+    padding: 20px;
+    width: 100%;
   }
   
   :root{/*Colors the app */
-    --Primary: #1e283e;
+    --Primary: #071026;
     --Secondary: #398cfd;
-    --Background: #FFFFFF;
+    --Background: #7cb5e1;
     --Text: #000000;
     --Text-Inverted: #FFFFFF;
-    --Color-Business: #E6B800;
-    --Color-Entrepreneurship: #808080;
-    --Color-Finance: #4CAF50;
-    --Color-Hospitality: #4472C4;
-    --Color-Marketing: #C00000;
-    --Color-Personal-Finance: #92D050;
+    --moon-color: #0b47a1; /* default moon color (dark blue) */
+    --Color-Business: #f3c742;
+    --Color-Entrepreneurship: #7d8689;
+    --Color-Finance: #279948;
+    --Color-Hospitality: #2d73bd;
+    --Color-Marketing: #c42d3a;
+    --Color-Personal-Finance: #94c55d;
   }
 
   /* menu on desktop */
@@ -145,7 +148,7 @@
   .content {
     width: 100vw;
     padding: 3rem 0px;
-    {/*background-color: bisque;*/}
+    /*background-color: bisque;*/
   }
   
   .content h1 {
@@ -164,18 +167,18 @@
 
 
   h1 {
-    color: rgb(0, 0, 0);
+    color: var(--Text);
     font-family: 'Maven Pro', normal;
     }
   
   h2 {
     text-align: center;
-    color: rgb(0, 0, 0);
+    color: var(--Text);
     font-family: 'Maven Pro', normal;
     }
   h3 {
     text-align: center;
-    color: rgb(0, 0, 0);
+    color: var(--Text);
     font-family: 'Maven Pro', normal;
     padding: 2%;
   }
@@ -222,21 +225,24 @@
   }
   
   .profile-button {
-      /* Remove position: fixed */
-      /* Remove right: 0 */
-      margin-left: auto; /* This will push it to the right */
-      margin-right: 20px; /* Add some spacing from the right edge */
       display: flex;
       align-items: center;
-      gap: 12px; /* space between text and image */
-  }
+      gap: 8px; /* space between role text and image */
+      margin-right: 20px;
+}
 
-  .profile-info-section {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 2px;
-  }
+.profile-button img {
+  border-radius: 50%;
+  object-fit: cover;
+  width: 60px;
+  height: 60px;
+}
+
+.profile-control {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* profile + moon */
+}
 
   .profile-role {
     font-size: 14px;
@@ -245,16 +251,189 @@
   }
 
   .profile-name {
-    font-size: 14px;
-    font-weight: 500;
-    color: #212529;
+    font-size: 16px;
+    color: #1e283e;
+    font-weight: 400;
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.3px;
   }
 
-  .profile-circle {
-    border-radius: 50%;
-    width: 60px;
-    height: 60px;
+  /* small moon toggle next to avatar */
+  .dark-toggle {
+    appearance: none;
+    -webkit-appearance: none;
+    border: none;
+    background: transparent;
+    color: var(--moon-color); /* uses theme-aware variable */
+    width: 28px;              /* slightly bigger */
+    height: 28px;            /* slightly bigger */
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background-color 0.15s, color 0.15s, transform 120ms;
+    position: relative; /* required for tooltip */
   }
+
+  .dark-toggle:active { transform: scale(0.98); }
+
+  /* tooltip (uses data-tooltip attr) */
+  .dark-toggle::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    font-size: 12px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease, transform 120ms ease;
+    z-index: 40;
+  }
+
+  .dark-toggle::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 8px;
+    background: rgba(0,0,0,0.85);
+    transform-origin: center;
+    rotate: 45deg;
+    opacity: 0;
+    transition: opacity 120ms ease;
+    z-index: 40;
+  }
+
+  .dark-toggle:hover::after,
+  .dark-toggle:hover::before {
+    opacity: 1;
+  }
+
+  /* slight color inversion in dark-mode so tooltip is readable */
+  .dark-mode .dark-toggle::after,
+  .dark-mode .dark-toggle::before{
+    background: rgba(255,255,255,0.08);
+    color: var(--Text);
+  }
+
+  .dark-toggle:hover {
+    background-color: rgba(0,0,0,0.06);
+  }
+
+  .dark-toggle svg { display: block; }
+
+  /* dark mode theme variables and overrides */
+  .dark-mode {
+    /* refined dark palette */
+    --Background: #071026;
+    --Primary: #7cb5e1;      /* primary accent for controls */
+    --Secondary: #398cfd;    /* secondary accent */
+    --Text: #ffffff;         /* main text */
+    --Text-Inverted: #071026;/* text to use on light backgrounds */
+    --Nav-Bar: #0d2433;      /* darker nav bar for better contrast */
+    --moon-color: #ffd54f;   /* moon becomes yellow in dark mode */
+
+    background-color: var(--Background);
+    color: var(--Text);
+  }
+
+  /* apply element-level overrides for dark mode */
+  .dark-mode body, .dark-mode .content {
+    background: var(--Background);
+    color: var(--Text);
+  }
+
+  .dark-mode header {
+    background-color: var(--Nav-Bar);
+    color: var(--Text);
+    box-shadow: 0 8px 30px rgba(2,6,23,0.85);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .dark-mode .profile-name { color: var(--Text); }
+  .dark-mode .desktop-nav .menu-items a,
+  .dark-mode .desktop-nav .menu-items button {
+    color: var(--Text);
+  }
+
+  .dark-mode .desktop-nav .menu-items a:hover,
+  .dark-mode .desktop-nav .menu-items button:hover {
+    background-color: rgba(255,255,255,0.04);
+    color: var(--Text);
+  }
+
+  /* search input / results in dark mode - stronger contrast and readable text */
+  .dark-mode .search-bar-container .search-input {
+    background-color: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.10);
+    color: var(--Text);
+    box-shadow: none;
+    caret-color: var(--Secondary);
+  }
+  .dark-mode .search-bar-container .search-input:focus {
+    background-color: rgba(255,255,255,0.04);
+    border-color: var(--Secondary);
+    box-shadow: 0 0 10px rgba(57,140,253,0.12);
+  }
+  .dark-mode .search-bar-container .search-input::placeholder { color: rgba(255,255,255,0.55); }
+
+  /* ensure the dropdown and its items are visible in dark mode */
+  .dark-mode .search-bar-container .search-results-dropdown {
+    background: rgba(13,36,51,0.95);
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 10px 30px rgba(2,6,23,0.7);
+  }
+  .dark-mode .search-bar-container .search-result-item {
+    background: transparent;
+    color: var(--Text);
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+  .dark-mode .search-bar-container .search-result-item:hover { background: rgba(255,255,255,0.02); }
+  .dark-mode .search-bar-container .result-title { color: var(--Primary); }
+  .dark-mode .search-bar-container .result-description, .dark-mode .search-bar-container .result-cluster { color: rgba(255,255,255,0.75); }
+  .dark-mode .search-bar-container .search-icon { color: rgba(255,255,255,0.8); }
+
+  /* popup adjustments */
+  .dark-mode .practice-popup { background: #0b1624; color: var(--Text); box-shadow: 0 12px 40px rgba(2,6,23,0.75); }
+  .dark-mode .practice-popup h3 { color: var(--Primary); }
+  .dark-mode .popup-cluster { color: rgba(230,238,248,0.85); }
+  .dark-mode .popup-button { background: var(--Primary); border-color: var(--Primary); color: #07243a; }
+  .dark-mode .popup-button.secondary { background: transparent; color: var(--Primary); border-color: rgba(255,255,255,0.06); }
+
+  /* buttons / toggles */
+  .dark-mode .flash-card-button { background-color: var(--Primary); border-color: var(--Primary); color: var(--Text-Inverted); }
+  .dark-mode .flash-card-button.restart-below { background-color: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.06); color: var(--Primary); }
+  .dark-mode .random-toggle-button { background-color: var(--Secondary); border-color: var(--Secondary); }
+  .dark-mode .random-toggle-button.active { background-color: #2a8be0; border-color: #2a8be0; }
+
+  /* practice card text contrast */
+  .dark-mode .Flash-Card-Body h2,
+  .dark-mode .Flash-Card-Body p { color: var(--Text-Inverted); }
+
+  /* form inputs and other white elements */
+  .dark-mode .practice-popup input[type='checkbox'],
+  .dark-mode input, .dark-mode textarea, .dark-mode select {
+    background: rgba(255,255,255,0.02);
+    color: var(--Text);
+    border-color: rgba(255,255,255,0.06);
+  }
+
+  /* ensure popup overlay is slightly darker in dark mode */
+  .dark-mode .practice-popup-overlay { background: rgba(0,0,0,0.6); }
+
 
 
 .DECAlogo{
@@ -312,6 +491,10 @@ text-align: center;
   .desktop-nav {
     display: none;
     text-align: right;
+  }
+
+  .search-bar-container {
+    display: none;
   }
 
   .mobile-nav {

@@ -131,18 +131,39 @@ body {
   flex: 1;
   min-width: 120px;
   min-height: 140px;
-  border-radius: 0;
+  border-radius: 0px;
   padding: 0;
   margin: 0;
   cursor: pointer; /* Add this to show it's clickable */
-  transition: 0.5s; /* Optional: for hover effect */
-  
+  transition: 0.25s; /* Optional: for hover effect */
+  position: relative; /* For hover effect */
   border: none;
 }
 
-.selector-box:hover {
-  filter: brightness(1.2);
-  color: black;
+.selector-box-left-end {
+  flex: 1;
+  min-width: 120px;
+  min-height: 140px;
+  border-radius: 10px 0 0 10px;
+  padding: 0;
+  margin: 0;
+  cursor: pointer; /* Add this to show it's clickable */
+  transition: 0.25s; /* Optional: for hover effect */
+  position: relative; /* For hover effect */
+  border: none;
+}
+
+.selector-box-right-end {
+  flex: 1;
+  min-width: 120px;
+  min-height: 140px;
+  border-radius: 0 10px 10px 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer; /* Add this to show it's clickable */
+  transition: 0.25s; /* Optional: for hover effect */
+  position: relative; /* For hover effect */
+  border: none;
 }
 
 .content-section {
@@ -172,12 +193,12 @@ body {
   min-height: 45px;
 }
 
-.selector-box h3 {
+.selector-box h2, .selector-box-left-end h2, .selector-box-right-end h2 {
   text-align: center;
   padding: 20px 10px;
   width: 100%;
   margin: 0;
-  font-size: 1.1em;
+  font-size: 1.4em;
   color: white;
   min-height: 140px;
   display: flex;
@@ -185,18 +206,15 @@ body {
   justify-content: center;
 }
 
-.examples {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  background-color: rgba(0, 0, 0, 0.2);
+.selector-box:hover, .selector-box-left-end:hover, .selector-box-right-end:hover {
+  box-shadow: inset 0 0 0 9999px rgba(255, 255, 255, 0.2);
 }
 
 .examples div {
   padding: 15px 10px;
   cursor: pointer;
   text-align: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Category Colors */
@@ -223,10 +241,6 @@ body {
 .personal-finance {
   background-color: var(--Color-Personal-Finance);
 }
- 
-.examples div:hover {
-  background-color: rgba(0, 0, 0, 0.2);
-}
 
 /* Removed responsive design to match fixed layout */
 
@@ -236,10 +250,14 @@ body {
   max-width: 400px;
   margin: 100px auto;
   padding: 40px;
-  background-color: white;
+  background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
   text-align: center;
+}
+
+.dark-mode .password-lock-container {
+  background-color: #232942;
 }
 
 .password-lock-container input {
@@ -356,5 +374,104 @@ body {
     font-size: 1rem;
     padding: 15px;
     line-height: 1.4;
+  }
+}
+
+/* Slideshow Styles */
+.slideshow-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.slideshow-prev,
+.slideshow-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 30px;
+  border: none;
+  padding: 15px 20px;
+  cursor: pointer;
+  z-index: 10;
+  transition: background-color 0.3s ease;
+  border-radius: 5px;
+}
+
+.slideshow-prev:hover,
+.slideshow-next:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.slideshow-prev {
+  left: 20px;
+}
+
+.slideshow-next {
+  right: 20px;
+}
+
+.slideshow-dots {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.dot:hover {
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.dot.active {
+  background-color: white;
+  width: 14px;
+  height: 14px;
+}
+
+/* Mobile adjustments for slideshow */
+@media screen and (max-width: 768px) {
+  .slideshow-prev,
+  .slideshow-next {
+    font-size: 24px;
+    padding: 10px 15px;
+  }
+  
+  .slideshow-prev {
+    left: 10px;
+  }
+  
+  .slideshow-next {
+    right: 10px;
+  }
+  
+  .slideshow-dots {
+    bottom: 10px;
+  }
+  
+  .dot {
+    width: 10px;
+    height: 10px;
+  }
+  
+  .dot.active {
+    width: 12px;
+    height: 12px;
   }
 }

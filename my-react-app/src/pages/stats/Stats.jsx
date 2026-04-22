@@ -3,29 +3,59 @@ import "./Stats.css";
 
 const Stats = () => {
   const [stats, setStats] = useState(null);
-  const user = JSON.parse(localStorage.getItem("user"));
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (user?.googleId) {
-      fetch(`https://deca.redhawks.us/api/get-stats?googleId=${user.googleId}`)
-        .then(res => res.json())
-        .then(data => setStats(data))
-        .catch(err => console.error("Stats fetch error:", err));
-    }
+    fetch(`/api/stats`)
+      .then(res => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.json();
+      })  
+      .then(data => {
+        setStats(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message);
+        setLoading(false);
+      });
   }, []);
 
   return (
-    <div>
+    <div className="stats-container">
       <h1 className="Header">STATS</h1>
-      {stats ? (
-        <>
-          <h1>Time Studied Today: {stats.Time} sec</h1>
-          <h1>Number of Cards Studied: {stats.NumCards}</h1>
-          <h1>Number of Cards Memorized: TODO</h1>
-          <h1>Time Per Card: {stats.AvgTime?.toFixed(2)} sec</h1>
-        </>
+      {loading ? (
+        <p>Loading...</p>
+      ) : error ? (
+        <div style={{color:'red'}}>Error: {error}</div>
+      ) : stats && stats.length > 0 ? (
+        <table className="stats-table">
+          <thead>
+            <tr>
+              <th>Email Address</th>
+              <th>Name</th>
+              <th>Time (seconds)</th>
+              <th>Number of Cards</th>
+              <th>Average Time/Card (seconds)</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {stats.map((s, index) => (
+              <tr key={index}>
+                <td>{s.email ?? "N/A"}</td>
+                <td>{s.name}</td>
+                <td>{s.Time}</td>
+                <td>{s.NumCards}</td>
+                <td>{typeof s.AvgTime === 'number' ? s.AvgTime.toFixed(3) : s.AvgTime}</td>
+                <td>{s.stat_date}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       ) : (
-        <h2>Coming Soon!</h2>
+        <p>No stats available</p>
       )}
     </div>
   );

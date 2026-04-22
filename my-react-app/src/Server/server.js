@@ -22,6 +22,35 @@ const pool = mysql.createPool({
   try {
     const connection = await pool.getConnection();
     console.log("✅ Connected to the database.");
+
+    // Ensure per-cluster last-index table exists so progress can be tracked per career cluster
+    const createTableSql = `
+      CREATE TABLE IF NOT EXISTS user_last_index (
+        google_id VARCHAR(255) NOT NULL,
+        career_cluster VARCHAR(255) NOT NULL,
+        last_index INT DEFAULT 0,
+        PRIMARY KEY (google_id, career_cluster)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `;
+    await connection.query(createTableSql);
+
+    const createReportsTableSql = `
+      CREATE TABLE IF NOT EXISTS flashcard_reports (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        reporter_google_id VARCHAR(255) NULL,
+        reporter_name VARCHAR(255) NULL,
+        reporter_email VARCHAR(255) NULL,
+        career_cluster VARCHAR(255) NOT NULL,
+        performance_indicator TEXT NOT NULL,
+        meaning TEXT NULL,
+        issue_type VARCHAR(100) NOT NULL,
+        notes TEXT NOT NULL,
+        status VARCHAR(30) NOT NULL DEFAULT 'open',
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `;
+    await connection.query(createReportsTableSql);
+
     connection.release();
   } catch (err) {
     console.error("❌ Failed to connect to the database:", err);
@@ -42,8 +71,18 @@ app.get('/api/PIs', async (req, res) => {
 
 app.get('/api/last-index', async (req, res) => {
   try {
-    const sql = 'SELECT last_index FROM deca.Users WHERE google_id = ?';
     const id = req.query.googleId;
+    const careerCluster = req.query.careerCluster;
+
+    // If a careerCluster is provided, try to return the per-cluster value first.
+    if (careerCluster) {
+      const sqlCluster = 'SELECT last_index FROM user_last_index WHERE google_id = ? AND career_cluster = ?';
+      const [clusterRows] = await pool.query(sqlCluster, [id, careerCluster]);
+      if (clusterRows.length > 0) return res.json(clusterRows);
+      // fall back to the global Users.last_index if no per-cluster row exists
+    }
+
+    const sql = 'SELECT last_index FROM deca.Users WHERE google_id = ?';
     const [data] = await pool.query(sql, [id]);
     res.json(data);
   } catch (err) {
@@ -53,8 +92,21 @@ app.get('/api/last-index', async (req, res) => {
 
 app.post('/api/last-index', async (req, res) => {
   try {
+    const { googleId, lastIndex, careerCluster } = req.body;
+
+    // If a careerCluster is provided, upsert into the per-cluster table.
+    if (careerCluster) {
+      const sql = `
+        INSERT INTO user_last_index (google_id, career_cluster, last_index)
+        VALUES (?, ?, ?)
+        ON DUPLICATE KEY UPDATE last_index = VALUES(last_index)
+      `;
+      const [result] = await pool.query(sql, [googleId, careerCluster, lastIndex]);
+      return res.json(result);
+    }
+
+    // Backward-compatible behavior: update the global users.last_index
     const sql = 'UPDATE Users SET last_index=? WHERE google_id = ?';
-    const { googleId, lastIndex } = req.body;
     const [data] = await pool.query(sql, [lastIndex, googleId]);
     res.json(data);
   } catch (err) {
@@ -177,15 +229,21 @@ app.post('/api/update-stats', async (req, res) => {
 app.get("/api/get-stats", async (req, res) => {
   try {
     const googleId = req.query.googleId;
+    if (!googleId) {
+      return res.status(400).json({ error: "googleId required" });
+    }
     const sql = `
-      SELECT Time, NumCards, AvgTime
+      SELECT Time, NumCards, AvgTime, stat_date
       FROM Stats
-      WHERE ID = ? AND stat_date = CURDATE()
+      WHERE google_id = ?
+      ORDER BY stat_date DESC
+      LIMIT 1
     `;
     const [results] = await pool.query(sql, [googleId]);
     if (results.length === 0) return res.json({ Time: 0, NumCards: 0, AvgTime: 0 });
     res.json(results[0]);
   } catch (err) {
+    console.error("Error fetching stats:", err);
     res.status(500).json(err);
   }
 });
@@ -254,6 +312,35 @@ app.get('/api/password', async (req, res) => {
   }
 });
 
+app.get('/api/users', async (req, res) => {
+  try {
+    const sql = `
+      SELECT google_id, name, email, role
+      FROM Users
+    `;
+    const [results] = await pool.query(sql);
+    res.json(results);
+  } catch (err) {
+    console.error("Error fetching users:", err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+app.get('/api/stats', async (req, res) => {
+  try {
+    const sql = `
+      SELECT u.email AS email, s.Time, s.NumCards, ROUND(s.AvgTime, 3) as AvgTime, s.stat_date, u.name
+      FROM Stats s
+      LEFT JOIN Users u ON s.ID = u.google_id
+    `;
+    const [results] = await pool.query(sql);
+    res.json(results);
+  } catch (err) {
+    console.error("Error fetching stats:", err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 app.post('/api/password', async (req, res) => {
   try {
     const { newPassword } = req.body;
@@ -269,223 +356,120 @@ app.post('/api/password', async (req, res) => {
   }
 });
 
-// ===== SPONSOR/ROLE MANAGEMENT ENDPOINTS =====
-
-/**
- * Check if user is a sponsor
- */
-app.get('/api/user/is-sponsor', async (req, res) => {
+app.post('/api/flashcard-reports', async (req, res) => {
   try {
-    const { googleId } = req.query;
-    if (!googleId) {
-      return res.status(400).json({ error: 'googleId required' });
+    const {
+      reporterGoogleId,
+      reporterName,
+      reporterEmail,
+      careerCluster,
+      performanceIndicator,
+      meaning,
+      issueType,
+      notes,
+    } = req.body;
+
+    if (!careerCluster || !performanceIndicator || !issueType || !notes) {
+      return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const sql = `SELECT role FROM Users WHERE google_id = ?`;
-    const [results] = await pool.query(sql, [googleId]);
-    
-    if (results.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
-    }
+    const insertSql = `
+      INSERT INTO flashcard_reports
+      (reporter_google_id, reporter_name, reporter_email, career_cluster, performance_indicator, meaning, issue_type, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
 
-    const isSponsor = results[0].role === 'sponsor';
-    res.json({ isSponsor, role: results[0].role });
+    const [result] = await pool.query(insertSql, [
+      reporterGoogleId || null,
+      reporterName || null,
+      reporterEmail || null,
+      careerCluster,
+      performanceIndicator,
+      meaning || null,
+      issueType,
+      notes,
+    ]);
+
+    res.status(201).json({ id: result.insertId, createdAt: new Date().toISOString() });
   } catch (err) {
-    console.error("Error checking sponsor status:", err);
-    res.status(500).json({ error: "Database error" });
+    console.error('Error submitting flashcard report:', err);
+    res.status(500).json({ error: 'Database error' });
   }
 });
 
-/**
- * Get user role and features
- */
-app.get('/api/user/role', async (req, res) => {
+app.get('/api/flashcard-reports', async (req, res) => {
   try {
-    const { googleId } = req.query;
-    if (!googleId) {
-      return res.status(400).json({ error: 'googleId required' });
+    const status = req.query.status;
+
+    let sql = `
+      SELECT id, reporter_google_id, reporter_name, reporter_email, career_cluster,
+             performance_indicator, meaning, issue_type, notes, status, created_at
+      FROM flashcard_reports
+    `;
+    const params = [];
+
+    if (status) {
+      sql += ' WHERE status = ?';
+      params.push(status);
     }
 
-    const sql = `SELECT google_id, name, email, role FROM Users WHERE google_id = ?`;
-    const [results] = await pool.query(sql, [googleId]);
-    
-    if (results.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
-    }
+    sql += ' ORDER BY created_at DESC LIMIT 200';
 
-    const user = results[0];
-    const roleFeatures = getRoleFeatures(user.role);
-    
-    res.json({ 
-      ...user, 
-      features: roleFeatures 
-    });
+    const [rows] = await pool.query(sql, params);
+    res.json(rows);
   } catch (err) {
-    console.error("Error fetching user role:", err);
-    res.status(500).json({ error: "Database error" });
+    console.error('Error fetching flashcard reports:', err);
+    res.status(500).json({ error: 'Database error' });
   }
 });
 
-/**
- * Update user role (admin only - in production, verify admin status)
- */
-app.post('/api/user/update-role', async (req, res) => {
+app.patch('/api/flashcard-reports/:id', async (req, res) => {
   try {
-    const { googleId, newRole } = req.body;
-    
-    if (!googleId || !newRole) {
-      return res.status(400).json({ error: 'googleId and newRole required' });
+    const { id } = req.params;
+    const requestedStatus = typeof req.body?.status === 'string' ? req.body.status.toLowerCase().trim() : '';
+
+    if (!['open', 'resolved'].includes(requestedStatus)) {
+      return res.status(400).json({ error: 'Status must be open or resolved' });
     }
 
-    const validRoles = ['sponsor', 'teacher', 'student'];
-    if (!validRoles.includes(newRole)) {
-      return res.status(400).json({ error: 'Invalid role' });
+    const updateSql = `
+      UPDATE flashcard_reports
+      SET status = ?
+      WHERE id = ?
+      LIMIT 1
+    `;
+
+    const [updateResult] = await pool.query(updateSql, [requestedStatus, id]);
+    if (updateResult.affectedRows === 0) {
+      return res.status(404).json({ error: 'Report not found' });
     }
 
-    // In production, verify that the requester is an admin/sponsor
-    const sql = `UPDATE Users SET role = ? WHERE google_id = ?`;
-    const [result] = await pool.query(sql, [newRole, googleId]);
-    
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'User not found' });
-    }
+    const [rows] = await pool.query(
+      `SELECT id, status, created_at FROM flashcard_reports WHERE id = ? LIMIT 1`,
+      [id]
+    );
 
-    // Fetch updated user
-    const fetchSql = `SELECT * FROM Users WHERE google_id = ?`;
-    const [updatedUser] = await pool.query(fetchSql, [googleId]);
-    
-    res.json({ 
-      message: "User role updated successfully", 
-      user: updatedUser[0] 
-    });
+    res.json(rows[0] || { id, status: requestedStatus });
   } catch (err) {
-    console.error("Error updating user role:", err);
-    res.status(500).json({ error: "Database error" });
+    console.error('Error updating flashcard report status:', err);
+    res.status(500).json({ error: 'Database error' });
   }
 });
-
-/**
- * Get sponsor-only restricted data
- */
-app.get('/api/sponsor/restricted-content', async (req, res) => {
-  try {
-    const { googleId } = req.query;
-    
-    if (!googleId) {
-      return res.status(400).json({ error: 'googleId required' });
-    }
-
-    // Check if user is sponsor
-    const checkSql = `SELECT role FROM Users WHERE google_id = ?`;
-    const [userResults] = await pool.query(checkSql, [googleId]);
-    
-    if (userResults.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    if (userResults[0].role !== 'sponsor') {
-      return res.status(403).json({ error: 'Access denied. Sponsor account required.' });
-    }
-
-    // Return sponsor-only data
-    const sponsorData = {
-      message: "Sponsor restricted content",
-      accessLevel: "sponsor",
-      restrictedFeatures: {
-        advancedAnalytics: true,
-        userManagement: true,
-        dataExport: true,
-        piEditing: true,
-        customReports: true
-      },
-      timestamp: new Date()
-    };
-
-    res.json(sponsorData);
-  } catch (err) {
-    console.error("Error fetching sponsor content:", err);
-    res.status(500).json({ error: "Database error" });
-  }
-});
-
-/**
- * Get all users (sponsor/admin only)
- */
-app.get('/api/sponsor/all-users', async (req, res) => {
-  try {
-    const { googleId } = req.query;
-    
-    if (!googleId) {
-      return res.status(400).json({ error: 'googleId required' });
-    }
-
-    // Check if requester is sponsor
-    const checkSql = `SELECT role FROM Users WHERE google_id = ?`;
-    const [requesterResults] = await pool.query(checkSql, [googleId]);
-    
-    if (requesterResults.length === 0 || requesterResults[0].role !== 'sponsor') {
-      return res.status(403).json({ error: 'Access denied. Sponsor account required.' });
-    }
-
-    // Return all users (exclude sensitive data)
-    const sql = `SELECT google_id, name, email, role, picture_url FROM Users ORDER BY name`;
-    const [allUsers] = await pool.query(sql);
-    
-    res.json({ users: allUsers, count: allUsers.length });
-  } catch (err) {
-    console.error("Error fetching all users:", err);
-    res.status(500).json({ error: "Database error" });
-  }
-});
-
-// Helper function to get role features
-function getRoleFeatures(role) {
-  const features = {
-    'sponsor': {
-      name: 'Sponsor Account',
-      canViewRestrictedContent: true,
-      canAccessAnalytics: true,
-      canManageUsers: true,
-      canEditPIs: true,
-      canViewTeacherDashboard: true,
-      canExportData: true
-    },
-    'teacher': {
-      name: 'Teacher Account',
-      canViewRestrictedContent: false,
-      canAccessAnalytics: true,
-      canManageUsers: true,
-      canEditPIs: true,
-      canViewTeacherDashboard: true,
-      canExportData: false
-    },
-    'student': {
-      name: 'Student Account',
-      canViewRestrictedContent: false,
-      canAccessAnalytics: false,
-      canManageUsers: false,
-      canEditPIs: false,
-      canViewTeacherDashboard: false,
-      canExportData: false
-    }
-  };
-  return features[role] || features['student'];
-}
 
 const path = require('path');
 
 
 
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve React build
+app.use(express.static(path.join(__dirname, '../../build')));
 
 // Catch-all to handle React routes (reloads, deep links)
-app.get('{*splat}', (req, res) => {
-  // If the request is not for an API route, serve the React app
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../build/index.html'));
 });
 
 
 
-app.listen(4000, () => {
-  console.log(`Server is running on port 4000.`);
+app.listen(3000, () => {
+  console.log(`Server is running on port 3000.`);
 });
