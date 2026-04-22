@@ -92,6 +92,11 @@ body {
   justify-content: left;
 }
 
+.dark-mode .left-square h2,
+.dark-mode .left-square p {
+  color: #000000;
+}
+
 .left-square p {
   text-align: left;
   width: 90%;
@@ -183,7 +188,7 @@ body {
 }
 
 .names-2025 h4 {
-  color: #ffffff; /* changed to white for founders' names */
+  color: #000000;
   text-align: center;
   font-size: 15px;
   font-family: 'Maven Pro', normal;
@@ -193,13 +198,17 @@ body {
   min-height: 45px;
 }
 
+.dark-mode .names-2025 h4 {
+  color: #ffffff;
+}
+
 .selector-box h2, .selector-box-left-end h2, .selector-box-right-end h2 {
   text-align: center;
   padding: 20px 10px;
   width: 100%;
   margin: 0;
   font-size: 1.4em;
-  color: white;
+  color: #000000;
   min-height: 140px;
   display: flex;
   align-items: center;
