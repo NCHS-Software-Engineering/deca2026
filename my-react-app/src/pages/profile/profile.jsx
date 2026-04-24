@@ -6,6 +6,85 @@ import { getRoleFeatures, getRoleDisplayName, ROLES } from '../../utils/roleUtil
 import './profile.css';
 import ProfileImageFile from '../../images/ProfileImageFile.webp';
 
+const ROLEPLAY_CLUSTERS = {
+  'Principles of Business Administration Events': [
+    'Principles of Business Management and Administration (PBM)',
+    'Principles of Entrepreneurship (PEN)',
+    'Principles of Finance (PFN)',
+    'Principles of Hospitality and Tourism (PHT)',
+    'Principles of Marketing (PMK)'
+  ],
+  'Team Decision Making Events': [
+    'Business Law and Ethics (BLTDM)',
+    'Buying and Merchandising (BTDM)',
+    'Entrepreneurship (ETDM)',
+    'Financial Services (FTDM)',
+    'Hospitality Services (HTDM)',
+    'Marketing Management (MTDM)',
+    'Sports and Entertainment Marketing (STDM)',
+    'Travel and Tourism (TTDM)'
+  ],
+  'Individual Series Events': [
+    'Accounting Applications (ACT)',
+    'Apparel and Accessories Marketing (AAM)',
+    'Automotive Services Marketing (ASM)',
+    'Business Finance (BFS)',
+    'Business Services Marketing (BSM)',
+    'Entrepreneurship (ENT)',
+    'Food Marketing (FMS)',
+    'Hotel and Lodging Management (HLM)',
+    'Human Resources Management (HRM)',
+    'Marketing Communications (MCS)',
+    'Quick Serve Restaurant Management (QSRM)',
+    'Restaurant and Food Service Management (RFSM)',
+    'Retail Merchandising (RMS)',
+    'Sports and Entertainment Marketing (SEM)'
+  ],
+  'Personal Financial Literacy Event': [
+    'Personal Financial Literacy (PFL)'
+  ]
+};
+
+const ROLEPLAY_CLUSTER_OPTIONS = Object.keys(ROLEPLAY_CLUSTERS);
+
+const WRITTEN_CLUSTERS = {
+  'Business Operations Research Events': [
+    'Business Services Operations (BOR)',
+    'Buying and Merchandising Operations (BMOR)',
+    'Finance Operations (FOR)',
+    'Hospitality and Tourism Operations (HTOR)',
+    'Sports and Entertainment Marketing Operations (SEOR)'
+  ],
+  'Project Management Events': [
+    'Business Solutions Project (PMBS)',
+    'Career Development Project (PMCD)',
+    'Community Awareness Project (PMCA)',
+    'Community Giving Project (PMCG)',
+    'Financial Literacy Project (PMFL)',
+    'Sales Project (PMSP)'
+  ],
+  'Entrepreneurship Events': [
+    'Innovation Plan (EIP)',
+    'Start-Up Business Plan (ESB)',
+    'Franchise Business Plan (EFB)',
+    'Independent Business Plan (EIB)',
+    'Business Growth Plan (EBG)',
+    'International Business Plan (IBP)'
+  ],
+  'Integrated Marketing Campaign Events': [
+    'Integrated Marketing Campaign-Event (IMCE)',
+    'Integrated Marketing Campaign-Product (IMCP)',
+    'Integrated Marketing Campaign-Service (IMCS)'
+  ]
+};
+
+const WRITTEN_CLUSTER_OPTIONS = Object.keys(WRITTEN_CLUSTERS);
+
+const getSelectionsStorageKey = (currentUser) => {
+  const userIdentifier = currentUser?.googleId || currentUser?.email;
+  return userIdentifier ? `profileSelections:${userIdentifier}` : null;
+};
+
 function Profile() {
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user');
@@ -22,6 +101,93 @@ function Profile() {
   const [imageScale, setImageScale] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [roleplayCluster, setRoleplayCluster] = useState('');
+  const [roleplayEvent, setRoleplayEvent] = useState('');
+  const [writtenCluster, setWrittenCluster] = useState('');
+  const [writtenEvent, setWrittenEvent] = useState('');
+  const [saveMessage, setSaveMessage] = useState('');
+
+  const roleplayEvents = roleplayCluster ? ROLEPLAY_CLUSTERS[roleplayCluster] : [];
+  const writtenEvents = writtenCluster ? WRITTEN_CLUSTERS[writtenCluster] : [];
+  const hasRoleplaySelection = Boolean(roleplayCluster && roleplayEvent);
+  const hasWrittenSelection = Boolean(writtenCluster && writtenEvent);
+  const hasIncompleteRoleplay = Boolean(roleplayCluster && !roleplayEvent);
+  const hasIncompleteWritten = Boolean(writtenCluster && !writtenEvent);
+  const canSaveSelections = (hasRoleplaySelection || hasWrittenSelection) && !hasIncompleteRoleplay && !hasIncompleteWritten;
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    const selectionsStorageKey = getSelectionsStorageKey(user);
+    if (!selectionsStorageKey) {
+      return;
+    }
+
+    const storedSelections = localStorage.getItem(selectionsStorageKey);
+    if (!storedSelections) {
+      return;
+    }
+
+    try {
+      const parsedSelections = JSON.parse(storedSelections);
+
+      const savedRoleplayCluster = parsedSelections.roleplayCluster;
+      const isValidRoleplayCluster = Boolean(savedRoleplayCluster && ROLEPLAY_CLUSTERS[savedRoleplayCluster]);
+      const savedRoleplayEvent = parsedSelections.roleplayEvent;
+      const isValidRoleplayEvent = Boolean(
+        isValidRoleplayCluster &&
+        savedRoleplayEvent &&
+        ROLEPLAY_CLUSTERS[savedRoleplayCluster].includes(savedRoleplayEvent)
+      );
+
+      const savedWrittenCluster = parsedSelections.writtenCluster;
+      const isValidWrittenCluster = Boolean(savedWrittenCluster && WRITTEN_CLUSTERS[savedWrittenCluster]);
+      const savedWrittenEvent = parsedSelections.writtenEvent;
+      const isValidWrittenEvent = Boolean(
+        isValidWrittenCluster &&
+        savedWrittenEvent &&
+        WRITTEN_CLUSTERS[savedWrittenCluster].includes(savedWrittenEvent)
+      );
+
+      setRoleplayCluster(isValidRoleplayCluster ? savedRoleplayCluster : '');
+      setRoleplayEvent(isValidRoleplayEvent ? savedRoleplayEvent : '');
+      setWrittenCluster(isValidWrittenCluster ? savedWrittenCluster : '');
+      setWrittenEvent(isValidWrittenEvent ? savedWrittenEvent : '');
+    } catch (error) {
+      console.error('Error loading saved profile selections:', error);
+    }
+  }, [user]);
+
+  const handleSaveSelections = () => {
+    if (!user) {
+      return;
+    }
+
+    const selectionsStorageKey = getSelectionsStorageKey(user);
+    if (!selectionsStorageKey || !canSaveSelections) {
+      return;
+    }
+
+    const selections = {
+      roleplayCluster,
+      roleplayEvent,
+      writtenCluster,
+      writtenEvent
+    };
+
+    localStorage.setItem(selectionsStorageKey, JSON.stringify(selections));
+
+    const updatedUser = {
+      ...user,
+      profileSelections: selections
+    };
+
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    setSaveMessage('Your event selections were saved.');
+  };
 
   const responseMessage = async (response) => {
     try {
@@ -185,6 +351,18 @@ function Profile() {
     window.dispatchEvent(new Event('profilePictureChanged'));
   };
 
+  useEffect(() => {
+    if (!saveMessage) {
+      return undefined;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setSaveMessage('');
+    }, 2500);
+
+    return () => clearTimeout(timeoutId);
+  }, [saveMessage]);
+
   return (
     <>
       {!user ? (
@@ -227,12 +405,82 @@ function Profile() {
             <h2>{user.name}</h2>
             <p>{user.email}</p>
             
-            {renderAccountTier()}
+            <div className="Titles">Cluster: </div>
+            <select
+              className="profile-select"
+              value={roleplayCluster}
+              onChange={(e) => {
+                setRoleplayCluster(e.target.value);
+                setRoleplayEvent('');
+              }}
+            >
+              <option value="">Select roleplay cluster</option>
+              {ROLEPLAY_CLUSTER_OPTIONS.map((cluster) => (
+                <option key={cluster} value={cluster}>
+                  {cluster}
+                </option>
+              ))}
+            </select>
 
             <div className="Titles">Roleplay event: </div>
-            <div className="Titles">Cluster: </div>
+            <select
+              className="profile-select"
+              value={roleplayEvent}
+              onChange={(e) => setRoleplayEvent(e.target.value)}
+              disabled={!roleplayCluster}
+            >
+              <option value="">
+                {roleplayCluster ? 'Select roleplay event' : 'Select a cluster first'}
+              </option>
+              {roleplayEvents.map((eventName) => (
+                <option key={eventName} value={eventName}>
+                  {eventName}
+                </option>
+              ))}
+            </select>
+
+            <div className="Titles">Written cluster: </div>
+            <select
+              className="profile-select"
+              value={writtenCluster}
+              onChange={(e) => {
+                setWrittenCluster(e.target.value);
+                setWrittenEvent('');
+              }}
+            >
+              <option value="">Select written cluster</option>
+              {WRITTEN_CLUSTER_OPTIONS.map((cluster) => (
+                <option key={cluster} value={cluster}>
+                  {cluster}
+                </option>
+              ))}
+            </select>
+
             <div className="Titles">Written event: </div>
-            <div className="Titles">Cluster: </div>
+            <select
+              className="profile-select"
+              value={writtenEvent}
+              onChange={(e) => setWrittenEvent(e.target.value)}
+              disabled={!writtenCluster}
+            >
+              <option value="">
+                {writtenCluster ? 'Select written event' : 'Select a cluster first'}
+              </option>
+              {writtenEvents.map((eventName) => (
+                <option key={eventName} value={eventName}>
+                  {eventName}
+                </option>
+              ))}
+            </select>
+
+            <button
+              onClick={handleSaveSelections}
+              className="save-selections-button"
+              disabled={!canSaveSelections}
+            >
+              Save Event Selections
+            </button>
+            {saveMessage && <div className="profile-save-message">{saveMessage}</div>}
 
             <button onClick={handleLogout}>Logout</button> {/*does not show a pointer cursor*/}
           </div>
