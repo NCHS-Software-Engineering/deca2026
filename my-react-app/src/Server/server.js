@@ -307,9 +307,10 @@ app.get('/api/users', async (req, res) => {
 app.get('/api/stats', async (req, res) => {
   try {
     const sql = `
-      SELECT u.email AS email, s.Time, s.NumCards, ROUND(s.AvgTime, 3) as AvgTime, s.stat_date, u.name
-      FROM Stats s
-      LEFT JOIN Users u ON s.ID = u.google_id
+      SELECT u.email AS email, u.name, s.Time, s.NumCards, ROUND(s.AvgTime, 3) as AvgTime, s.stat_date
+      FROM Users u
+      LEFT JOIN Stats s ON u.google_id = s.ID
+      ORDER BY u.name ASC
     `;
     const [results] = await pool.query(sql);
     res.json(results);

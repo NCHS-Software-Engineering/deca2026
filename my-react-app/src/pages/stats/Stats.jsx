@@ -46,10 +46,10 @@ const Stats = () => {
               <tr key={index}>
                 <td>{s.email ?? "N/A"}</td>
                 <td>{s.name}</td>
-                <td>{s.Time}</td>
-                <td>{s.NumCards}</td>
-                <td>{typeof s.AvgTime === 'number' ? s.AvgTime.toFixed(3) : s.AvgTime}</td>
-                <td>{s.stat_date}</td>
+                <td>{s.Time ?? "N/A"}</td>
+                <td>{s.NumCards ?? "N/A"}</td>
+                <td>{typeof s.AvgTime === 'number' ? s.AvgTime.toFixed(3) : (s.AvgTime ?? "N/A")}</td>
+                <td>{s.stat_date ?? "N/A"}</td>
               </tr>
             ))}
           </tbody>
