@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import "./FlashcardReports.css";
 
 const REPORT_STORAGE_KEY = "deca_flashcard_reports";
+const RAPID_SUCCESSION_WINDOW_MS = 60 * 1000;
 const CLUSTER_OPTIONS = [
   { label: "Business Management and Administration", value: "Business" },
   { label: "Entrepreneurship", value: "Entrepreneurship" },
@@ -21,6 +22,61 @@ const isDeveloperUser = (user) => {
   );
 };
 
+const normalizeReportText = (value) => String(value || "").trim().toLowerCase();
+
+const getReportTimestamp = (report) => {
+  const rawValue = report?.created_at || report?.createdAt || report?.timestamp || Date.now();
+  const parsed = new Date(rawValue).getTime();
+  return Number.isFinite(parsed) ? parsed : Date.now();
+};
+
+const getReportIdentity = (report) =>
+  normalizeReportText(
+    report?.reporter_google_id ||
+      report?.reporterGoogleId ||
+      report?.reporter_email ||
+      report?.reporterEmail ||
+      report?.reporter_name ||
+      report?.reporterName
+  ) || "anonymous";
+
+const getReportSignature = (report) =>
+  [
+    getReportIdentity(report),
+    normalizeReportText(report?.career_cluster || report?.careerCluster),
+    normalizeReportText(report?.performance_indicator || report?.performanceIndicator),
+    normalizeReportText(report?.issue_type || report?.issueType),
+  ].join("::");
+
+const filterRapidSuccessionReports = (inputReports) => {
+  const orderedReports = [...(Array.isArray(inputReports) ? inputReports : [])].sort(
+    (a, b) => getReportTimestamp(b) - getReportTimestamp(a)
+  );
+
+  const lastSeenBySignature = new Map();
+  const visibleReports = [];
+  let hiddenCount = 0;
+
+  for (const report of orderedReports) {
+    const timestamp = getReportTimestamp(report);
+    const signature = getReportSignature(report);
+    const previousTimestamp = lastSeenBySignature.get(signature);
+
+    if (
+      typeof previousTimestamp === "number" &&
+      previousTimestamp - timestamp <= RAPID_SUCCESSION_WINDOW_MS
+    ) {
+      hiddenCount += 1;
+      continue;
+    }
+
+    lastSeenBySignature.set(signature, timestamp);
+    visibleReports.push(report);
+  }
+
+  return { visibleReports, hiddenCount };
+};
+
 const FlashcardReports = () => {
   const [searchParams] = useSearchParams();
   const [reports, setReports] = useState([]);
@@ -31,6 +87,7 @@ const FlashcardReports = () => {
   const [success, setSuccess] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [updatingStatusIds, setUpdatingStatusIds] = useState({});
+  const [showAllReports, setShowAllReports] = useState(false);
 
   const rawUser = localStorage.getItem("user");
   const user = useMemo(() => {
@@ -155,6 +212,14 @@ const FlashcardReports = () => {
     setReports(next);
     localStorage.setItem(REPORT_STORAGE_KEY, JSON.stringify(next));
   };
+
+  const { visibleReports, hiddenCount } = useMemo(() => {
+    if (showAllReports) {
+      return { visibleReports: reports, hiddenCount: 0 };
+    }
+
+    return filterRapidSuccessionReports(reports);
+  }, [reports, showAllReports]);
 
   const getReportStatus = (report) => (report.status || "open").toLowerCase();
 
@@ -385,10 +450,26 @@ const FlashcardReports = () => {
 
       {developerView && (
         <section className="reports-table-section">
-          <h2>Recent Reports</h2>
+          <div className="reports-table-header">
+            <div>
+              <h2>Recent Reports</h2>
+              {!showAllReports && hiddenCount > 0 && (
+                <p className="reports-filter-note">
+                  Rapid-succession filter is hiding {hiddenCount} report{hiddenCount === 1 ? "" : "s"}.
+                </p>
+              )}
+            </div>
+            <button
+              type="button"
+              className="reports-toggle-button"
+              onClick={() => setShowAllReports((prev) => !prev)}
+            >
+              {showAllReports ? "Show filtered reports" : "Show all reports"}
+            </button>
+          </div>
           {loadingReports ? (
             <p>Loading reports...</p>
-          ) : reports.length === 0 ? (
+          ) : visibleReports.length === 0 ? (
             <p>No reports yet.</p>
           ) : (
             <div className="reports-table-wrapper">
@@ -405,7 +486,7 @@ const FlashcardReports = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {reports.map((report) => (
+                  {visibleReports.map((report) => (
                     <tr key={report.id}>
                       <td>{new Date(report.created_at).toLocaleString()}</td>
                       <td>{report.career_cluster || report.careerCluster}</td>
