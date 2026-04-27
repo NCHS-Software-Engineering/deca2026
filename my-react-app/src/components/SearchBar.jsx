@@ -10,6 +10,8 @@ const SearchBar = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const normalizeText = (value = '') => String(value).toLowerCase();
+
   // Website pages that can be searched
   const websitePages = [
     { title: 'Home', path: '/', type: 'page' },
@@ -32,8 +34,10 @@ const SearchBar = () => {
 
   const handleSearch = async (query) => {
     setSearchQuery(query);
-    
-    if (!query.trim()) {
+
+    const trimmedQuery = query.trim();
+
+    if (!trimmedQuery) {
       setSearchResults([]);
       setShowResults(false);
       return;
@@ -43,7 +47,7 @@ const SearchBar = () => {
     setLoading(true);
 
     try {
-      const lowerQuery = query.toLowerCase();
+      const lowerQuery = normalizeText(trimmedQuery);
       
       // Search website pages
       const pageMatches = websitePages.filter(page =>
@@ -70,30 +74,60 @@ const SearchBar = () => {
         }))
       ];
 
-      // Try to search flashcards
-      try {
-        const piRes = await axios.get("https://decatest.redhawks.us/api/PIs", {
-          params: { event: "Marketing" } // Default cluster; adjust as needed
-        });
+      const flashcardResponses = await Promise.allSettled(
+        clusterPages.map(async (cluster) => {
+          const response = await axios.get("https://decatest.redhawks.us/api/PIs", {
+            params: { event: cluster.cluster },
+          });
 
-        const flashcards = piRes.data || [];
-        const flashcardMatches = flashcards.filter(card =>
-          card.PerformanceIndicator?.toLowerCase().includes(lowerQuery) ||
-          card.Meaning?.toLowerCase().includes(lowerQuery)
-        ).slice(0, 5);
+          return (response.data || []).map((card) => ({
+            ...card,
+            cluster: card.cluster || cluster.cluster,
+            clusterTitle: cluster.title,
+          }));
+        })
+      );
 
-        results.push(
-          ...flashcardMatches.map(card => ({
-            type: 'flashcard',
-            title: card.PerformanceIndicator,
-            description: card.Meaning,
-            cluster: card.cluster || 'Marketing',
-            icon: '🎓'
-          }))
-        );
-      } catch (err) {
-        console.warn("Flashcard search failed:", err.message);
-      }
+      const flashcards = flashcardResponses.flatMap((result) => (
+        result.status === 'fulfilled' ? result.value : []
+      ));
+
+      const flashcardMatches = flashcards
+        .map((card) => {
+          const performanceIndicator = normalizeText(card.PerformanceIndicator);
+          const meaning = normalizeText(card.Meaning);
+          const clusterName = normalizeText(card.clusterTitle || card.cluster);
+
+          let score = Number.POSITIVE_INFINITY;
+          if (performanceIndicator === lowerQuery) {
+            score = 0;
+          } else if (performanceIndicator.includes(lowerQuery)) {
+            score = 1;
+          } else if (clusterName.includes(lowerQuery)) {
+            score = 2;
+          } else if (meaning.includes(lowerQuery)) {
+            score = 3;
+          }
+
+          return { ...card, score };
+        })
+        .filter((card) => Number.isFinite(card.score))
+        .sort((a, b) => a.score - b.score || a.PerformanceIndicator.localeCompare(b.PerformanceIndicator))
+        .filter((card, index, array) => {
+          const uniqueKey = `${card.cluster}::${card.PerformanceIndicator}`;
+          return index === array.findIndex((item) => `${item.cluster}::${item.PerformanceIndicator}` === uniqueKey);
+        })
+        .slice(0, 8);
+
+      results.push(
+        ...flashcardMatches.map(card => ({
+          type: 'flashcard',
+          title: card.PerformanceIndicator,
+          description: card.Meaning,
+          cluster: card.clusterTitle || card.cluster || 'Flashcard',
+          icon: '🎓'
+        }))
+      );
 
       setSearchResults(results);
     } catch (err) {
@@ -137,7 +171,7 @@ const SearchBar = () => {
       <input
         type="text"
         className="search-input"
-        placeholder="    Search website & flashcards..."
+        placeholder="    Search topics, pages, and flashcards..."
         value={searchQuery}
         onChange={(e) => handleSearch(e.target.value)}
         onFocus={() => searchQuery.trim() && setShowResults(true)}
