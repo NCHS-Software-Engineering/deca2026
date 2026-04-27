@@ -49,6 +49,7 @@
     background-color: rgb(255, 255, 255);
     font-size: 20px;
     transition: 0.2s;
+    cursor: pointer;
   }
   
   .profile-info button:hover {
@@ -66,6 +67,64 @@
     text-align: left;
     color: rgb(255, 255, 255) !important;
     font-size: 17px;
+  }
+
+  .profile-select {
+    width: calc(100% - 20px);
+    margin: 8px 10px 0;
+    padding: 10px 12px;
+    border: 1px solid rgb(44, 112, 204);
+    border-radius: 4px;
+    font-family: 'Maven Pro', normal;
+    font-size: 16px;
+    color: rgb(44, 112, 204);
+    background-color: rgb(255, 255, 255);
+  }
+
+  .profile-select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .profile-select option {
+    color: rgb(44, 112, 204);
+    background-color: rgb(255, 255, 255);
+  }
+
+  .save-selections-button {
+    width: calc(100% - 20px);
+    margin: 20px 10px 0 !important;
+    font-size: 16px !important;
+    padding: 10px 12px !important;
+  }
+
+  .save-selections-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .profile-save-message {
+    margin: 10px 10px 0;
+    text-align: left;
+    color: rgb(163, 237, 182);
+    font-size: 14px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .profile-select {
+      color: rgb(240, 246, 255);
+      background-color: rgb(28, 36, 48);
+      border-color: rgb(120, 168, 235);
+    }
+
+    .profile-select option {
+      color: rgb(240, 246, 255);
+      background-color: rgb(28, 36, 48);
+    }
+
+    .profile-save-message {
+      color: rgb(190, 250, 206);
+    }
   }
 
   /* Profile Picture Upload Styles */
@@ -181,12 +240,10 @@
   user-select: none;
 }
 
-.cropper-image {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform-origin: center center;
-  max-width: none;
+.cropper-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
   user-select: none;
   -webkit-user-drag: none;
 }

@@ -248,12 +248,34 @@ app.get("/api/get-stats", async (req, res) => {
   }
 });
 
+/**
+ * Determine user role based on email domain
+ * @param {string} email - User's email address
+ * @returns {string} Role: 'student', 'teacher', or 'sponsor'
+ */
+function determineRoleFromEmail(email) {
+  // Check if email ends with student domain
+  if (email.endsWith("@stu.naperville203.org")) {
+    return "student";
+  }
+  // Check if email ends with teacher/staff domain
+  if (email.endsWith("@naperville203.org")) {
+    return "teacher";
+  }
+  // Default to student for external emails
+  return "student";
+}
+
 app.post('/api/login', async (req, res) => {
   try {
-    const { googleId, name, email, pictureUrl, role } = req.body;
+    const { googleId, name, email, pictureUrl } = req.body;
     if (!googleId || !email || !name) {
       return res.status(400).json({ error: "Missing required user fields" });
     }
+
+    // Determine role based on email domain
+    const role = determineRoleFromEmail(email);
+    console.log(`User login: ${email} assigned role: ${role}`);
 
     const sql = `
       INSERT INTO Users (google_id, name, email, picture_url, role)
