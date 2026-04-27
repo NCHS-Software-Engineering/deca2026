@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
@@ -79,6 +79,7 @@ const WRITTEN_CLUSTERS = {
 };
 
 const WRITTEN_CLUSTER_OPTIONS = Object.keys(WRITTEN_CLUSTERS);
+const CROP_SIZE = 300;
 
 const getSelectionsStorageKey = (currentUser) => {
   const userIdentifier = currentUser?.googleId || currentUser?.email;
@@ -86,6 +87,9 @@ const getSelectionsStorageKey = (currentUser) => {
 };
 
 function Profile() {
+  const cropPreviewCanvasRef = useRef(null);
+  const cropImageRef = useRef(null);
+
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : null;
@@ -298,43 +302,78 @@ function Profile() {
     }
   };
 
-  const saveCroppedImage = () => {
-    // Create a canvas to crop the circular area
-    const canvas = document.createElement('canvas');
-    const size = 300; // Final image size
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d');
+  const drawCropPreview = (canvas, image) => {
+    if (!canvas || !image) {
+      return;
+    }
 
-    // Create circular clipping path
-    ctx.beginPath();
-    ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
-    ctx.closePath();
-    ctx.clip();
+    const context = canvas.getContext('2d');
+    if (!context) {
+      return;
+    }
 
-    // Draw the positioned and scaled image
-    const img = new Image();
-    img.onload = () => {
-      const scale = imageScale;
-      const offsetX = imagePosition.x;
-      const offsetY = imagePosition.y;
-      
-      ctx.drawImage(
-        img,
-        offsetX,
-        offsetY,
-        img.width * scale,
-        img.height * scale
-      );
+    const scale = imageScale;
+    const offsetX = imagePosition.x;
+    const offsetY = imagePosition.y;
+    const scaledWidth = image.naturalWidth * scale;
+    const scaledHeight = image.naturalHeight * scale;
+    const centerX = CROP_SIZE / 2 + offsetX;
+    const centerY = CROP_SIZE / 2 + offsetY;
 
-      const croppedImage = canvas.toDataURL('image/png');
-      setProfilePicture(croppedImage);
-      localStorage.setItem('customProfilePicture', croppedImage);
-      window.dispatchEvent(new Event('profilePictureChanged'));
-      setShowCropper(false);
-      setTempImage(null);
+    context.clearRect(0, 0, CROP_SIZE, CROP_SIZE);
+    context.save();
+    context.beginPath();
+    context.arc(CROP_SIZE / 2, CROP_SIZE / 2, CROP_SIZE / 2, 0, Math.PI * 2);
+    context.closePath();
+    context.clip();
+    context.drawImage(
+      image,
+      centerX - scaledWidth / 2,
+      centerY - scaledHeight / 2,
+      scaledWidth,
+      scaledHeight
+    );
+    context.restore();
+  };
+
+  useEffect(() => {
+    if (!tempImage) {
+      cropImageRef.current = null;
+      return undefined;
+    }
+
+    const image = new Image();
+    image.onload = () => {
+      cropImageRef.current = image;
+      drawCropPreview(cropPreviewCanvasRef.current, image);
     };
-    img.src = tempImage;
+    image.src = tempImage;
+
+    return () => {
+      image.onload = null;
+    };
+  }, [tempImage]);
+
+  useEffect(() => {
+    if (!showCropper || !cropImageRef.current) {
+      return;
+    }
+
+    drawCropPreview(cropPreviewCanvasRef.current, cropImageRef.current);
+  }, [showCropper, imagePosition, imageScale]);
+
+  const saveCroppedImage = () => {
+    const canvas = cropPreviewCanvasRef.current;
+    if (!canvas || !cropImageRef.current) {
+      return;
+    }
+
+    const croppedImage = canvas.toDataURL('image/png');
+    setProfilePicture(croppedImage);
+    localStorage.setItem('customProfilePicture', croppedImage);
+    window.dispatchEvent(new Event('profilePictureChanged'));
+    setShowCropper(false);
+    setTempImage(null);
   };
 
   const cancelCrop = () => {
@@ -502,17 +541,14 @@ function Profile() {
               onTouchMove={handleTouchMove}
               onTouchEnd={handleMouseUp}
             >
-              <img
-                src={tempImage}
-                alt="Crop preview"
-                className="cropper-image"
-                style={{
-                  transform: `translate(${imagePosition.x}px, ${imagePosition.y}px) scale(${imageScale})`,
-                  cursor: isDragging ? 'grabbing' : 'grab'
-                }}
+              <canvas
+                ref={cropPreviewCanvasRef}
+                width={CROP_SIZE}
+                height={CROP_SIZE}
+                className="cropper-canvas"
+                style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
                 onMouseDown={handleMouseDown}
                 onTouchStart={handleTouchStart}
-                draggable={false}
               />
               <div className="cropper-circle-overlay" />
             </div>
