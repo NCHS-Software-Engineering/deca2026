@@ -37,6 +37,30 @@ const MobileNav = () => {
   const [showMenu, setShowMenu] = useState(false);
   let ref = useRef();
 
+  const openMenuAndFocusFirst = () => {
+    setShowMenu(true);
+    window.setTimeout(() => {
+      const firstItem = ref.current?.querySelector(':scope > .menu-items > button, :scope > .menu-items > a');
+      firstItem?.focus();
+    }, 0);
+  };
+
+  const handleMenuButtonKeyDown = (event) => {
+    if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      if (!showMenu) {
+        openMenuAndFocusFirst();
+      } else {
+        const firstItem = ref.current?.querySelector(':scope > .menu-items > button, :scope > .menu-items > a');
+        firstItem?.focus();
+      }
+    }
+    if (event.key === 'Escape' && showMenu) {
+      event.preventDefault();
+      setShowMenu(false);
+    }
+  };
+
   useEffect(() => {
     const handler = (event) => {
       if (showMenu && ref.current && !ref.current.contains(event.target)) {
@@ -62,7 +86,8 @@ const MobileNav = () => {
         
         className="mobile-nav__menu-button"
         type="button"
-        onClick={() => setShowMenu((prev) => !prev)}>
+        onClick={() => setShowMenu((prev) => !prev)}
+        onKeyDown={handleMenuButtonKeyDown}>
         MENU
       </button>
 
