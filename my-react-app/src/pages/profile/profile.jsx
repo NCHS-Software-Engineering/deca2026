@@ -110,6 +110,9 @@ function Profile() {
   const [writtenCluster, setWrittenCluster] = useState('');
   const [writtenEvent, setWrittenEvent] = useState('');
   const [saveMessage, setSaveMessage] = useState('');
+  const [studyTime, setStudyTime] = useState(null);
+  const [studyTimeLoading, setStudyTimeLoading] = useState(false);
+  const [studyTimeError, setStudyTimeError] = useState(null);
 
   const roleplayEvents = roleplayCluster ? ROLEPLAY_CLUSTERS[roleplayCluster] : [];
   const writtenEvents = writtenCluster ? WRITTEN_CLUSTERS[writtenCluster] : [];
@@ -162,6 +165,37 @@ function Profile() {
     } catch (error) {
       console.error('Error loading saved profile selections:', error);
     }
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) {
+      setStudyTime(null);
+      setStudyTimeError(null);
+      setStudyTimeLoading(false);
+      return;
+    }
+
+    setStudyTimeLoading(true);
+    setStudyTimeError(null);
+
+    axios.get('/api/stats')
+      .then((response) => {
+        const stats = response.data || [];
+        const userStats = stats.filter((s) => {
+          return s.email && user.email && s.email.toLowerCase() === user.email.toLowerCase();
+        });
+        const totalTime = userStats.reduce((sum, stat) => {
+          const timeValue = Number(stat.Time);
+          return sum + (Number.isFinite(timeValue) ? timeValue : 0);
+        }, 0);
+        setStudyTime(totalTime);
+      })
+      .catch((err) => {
+        console.error('Error loading study time:', err);
+        setStudyTimeError(err.message || 'Unable to load study time');
+        setStudyTime(null);
+      })
+      .finally(() => setStudyTimeLoading(false));
   }, [user]);
 
   const handleSaveSelections = () => {
@@ -520,6 +554,18 @@ function Profile() {
               Save Event Selections
             </button>
             {saveMessage && <div className="profile-save-message">{saveMessage}</div>}
+
+            <div className="Titles">Time spent studying:</div>
+            {studyTimeLoading ? (
+              <p>Loading study time...</p>
+            ) : studyTimeError ? (
+              <p style={{ color: 'red' }}>Error loading study time: {studyTimeError}</p>
+            ) : studyTime !== null ? (
+              <p>{studyTime.toFixed(1)} seconds</p>
+            ) : (
+              <p>No study time recorded yet.</p>
+            )}
+
 
             <button onClick={handleLogout}>Logout</button> {/*does not show a pointer cursor*/}
           </div>
