@@ -1,7 +1,6 @@
 .flashcard-reports-page {
   width: min(1100px, 92%);
   margin: 40px auto 60px auto;
-  color: #1f2f46;
 }
 
 .flashcard-reports-page h1 {
@@ -11,7 +10,7 @@
 .reports-subtitle {
   margin-top: 0;
   margin-bottom: 20px;
-  color: #ffffff;
+  color: var(--Text);
 }
 
 .report-form {
@@ -103,6 +102,7 @@
 }
 
 .reports-table-header {
+  color: #071026;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -110,8 +110,17 @@
   margin-bottom: 12px;
 }
 
+.dark-mode .reports-table-header {
+  color: #071026;
+}
+
 .reports-table-section h2 {
   margin-top: 4px;
+  color: #071026;
+}
+
+.dark-mode .reports-table-section h2 {
+  color: #071026;
 }
 
 .reports-filter-note {
@@ -157,6 +166,10 @@
 .reports-table-wrapper th {
   color: #315177;
   background: #f5f8fc;
+}
+
+.reports-table-wrapper td {
+  color: #071026;
 }
 
 .status-actions {
