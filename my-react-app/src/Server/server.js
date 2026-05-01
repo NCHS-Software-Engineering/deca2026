@@ -306,7 +306,7 @@ app.get('/api/password', async (req, res) => {
 app.get('/api/users', async (req, res) => {
   try {
     const sql = `
-      SELECT google_id, name, email, role
+      SELECT google_id, name, email, role, last_login_at
       FROM Users
     `;
     const [results] = await pool.query(sql);
