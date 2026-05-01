@@ -6,20 +6,34 @@ const Stats = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const fetchStats = async () => {
+    try {
+      const res = await fetch(`/api/stats`);
+      if (!res.ok) throw new Error('Network response was not ok');
+      const data = await res.json();
+      setStats(data);
+      setError(null);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
+
+  const formatLoginDate = (value) => {
+    if (!value) return "N/A";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
+  };
+
   useEffect(() => {
-    fetch(`/api/stats`)
-      .then(res => {
-        if (!res.ok) throw new Error('Network response was not ok');
-        return res.json();
-      })  
-      .then(data => {
-        setStats(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        setError(err.message);
-        setLoading(false);
-      });
+    fetchStats();
+
+    const intervalId = setInterval(() => {
+      fetchStats();
+    }, 30000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   return (
@@ -35,6 +49,7 @@ const Stats = () => {
             <tr>
               <th>Email Address</th>
               <th>Name</th>
+              <th>Most Recent Log-in Date</th>
               <th>Time (seconds)</th>
               <th>Number of Cards</th>
               <th>Average Time/Card (seconds)</th>
@@ -46,6 +61,7 @@ const Stats = () => {
               <tr key={index}>
                 <td>{s.email ?? "N/A"}</td>
                 <td>{s.name}</td>
+                <td>{formatLoginDate(s.lastLoginAt)}</td>
                 <td>{s.Time ?? "N/A"}</td>
                 <td>{s.NumCards ?? "N/A"}</td>
                 <td>{typeof s.AvgTime === 'number' ? s.AvgTime.toFixed(3) : (s.AvgTime ?? "N/A")}</td>

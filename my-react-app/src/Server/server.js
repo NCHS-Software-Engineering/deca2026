@@ -23,6 +23,18 @@ const pool = mysql.createPool({
     const connection = await pool.getConnection();
     console.log("✅ Connected to the database.");
 
+    const ensureUsersLoginColumnSql = `
+      SELECT COUNT(*) AS column_count
+      FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+        AND TABLE_NAME = 'Users'
+        AND COLUMN_NAME = 'last_login_at'
+    `;
+    const [loginColumnRows] = await connection.query(ensureUsersLoginColumnSql);
+    if (loginColumnRows[0].column_count === 0) {
+      await connection.query(`ALTER TABLE Users ADD COLUMN last_login_at DATETIME NULL DEFAULT NULL`);
+    }
+
     // Ensure per-cluster last-index table exists so progress can be tracked per career cluster
     const createTableSql = `
       CREATE TABLE IF NOT EXISTS user_last_index (
@@ -256,13 +268,14 @@ app.post('/api/login', async (req, res) => {
     }
 
     const sql = `
-      INSERT INTO Users (google_id, name, email, picture_url, role)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO Users (google_id, name, email, picture_url, role, last_login_at)
+      VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
       ON DUPLICATE KEY UPDATE
         name = VALUES(name),
         email = VALUES(email),
         picture_url = VALUES(picture_url),
-        role = VALUES(role)
+        role = VALUES(role),
+        last_login_at = CURRENT_TIMESTAMP
     `;
 
     await pool.query(sql, [googleId, name, email, pictureUrl, role]);
@@ -307,10 +320,17 @@ app.get('/api/users', async (req, res) => {
 app.get('/api/stats', async (req, res) => {
   try {
     const sql = `
-      SELECT u.email AS email, u.name, s.Time, s.NumCards, ROUND(s.AvgTime, 3) as AvgTime, s.stat_date
+      SELECT
+        u.email AS email,
+        u.name,
+        u.last_login_at AS lastLoginAt,
+        s.Time,
+        s.NumCards,
+        ROUND(s.AvgTime, 3) as AvgTime,
+        s.stat_date
       FROM Users u
       LEFT JOIN Stats s ON u.google_id = s.ID
-      ORDER BY u.name ASC
+      ORDER BY (s.stat_date IS NULL), s.stat_date DESC, u.name ASC
     `;
     const [results] = await pool.query(sql);
     res.json(results);
