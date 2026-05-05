@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import "./FlashcardReports.css";
 
@@ -122,7 +122,7 @@ const FlashcardReports = () => {
     }
   };
 
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     if (!developerView) return;
     setLoadingReports(true);
     try {
@@ -136,13 +136,13 @@ const FlashcardReports = () => {
     } finally {
       setLoadingReports(false);
     }
-  };
+  }, [developerView]);
 
   useEffect(() => {
     if (developerView) {
       fetchReports();
     }
-  }, [developerView]);
+  }, [developerView, fetchReports]);
 
   useEffect(() => {
     const cluster = formData.careerCluster;
