@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import axios from 'axios';
 import "./PracticeMode.css";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -29,66 +29,58 @@ const Practice = () => {
   const [originalData, setOriginalData] = useState([]);
   const [fullData, setFullData] = useState([]);
   const [sortMode, setSortMode] = useState('default'); // 'default' | 'starred' | 'known'
+  const sortModeRef = useRef(sortMode);
+
+  useEffect(() => {
+    sortModeRef.current = sortMode;
+  }, [sortMode]);
 
   // Popup state: show info about recently practiced cluster
   const [showPopup, setShowPopup] = useState(true);
 
-  let user = null;
-const storedUserRaw = localStorage.getItem("user");
+  const user = useMemo(() => {
+    const storedUserRaw = localStorage.getItem("user");
+    if (!storedUserRaw) return null;
 
-if (storedUserRaw) {
-  try {
-    const storedUser = JSON.parse(storedUserRaw);
-    user = {
-      ...storedUser,
-      googleId: storedUser?.sub || storedUser?.google_id,
-    };
-  } catch (err) {
-    console.error("Error parsing stored user:", err);
-  }
-}
+    try {
+      const storedUser = JSON.parse(storedUserRaw);
+      return {
+        ...storedUser,
+        googleId: storedUser?.sub || storedUser?.google_id,
+      };
+    } catch (err) {
+      console.error("Error parsing stored user:", err);
+      return null;
+    }
+  }, []);
 
+  const sortData = useCallback((mode, sourceCards, starredOverride) => {
+    const source = sourceCards || [];
+    if (!source || source.length === 0) return source;
 
-  const applySort = useCallback((mode, starredOverride) => {
-    // if no source available, nothing to sort
-    const useStarred = typeof starredOverride !== 'undefined' ? starredOverride : starred;
-    // preserve current PI so we can restore currentIndex after sorting
-    const currentPI = data[currentIndex]?.PerformanceIndicator;
-
-    // For starred sorting, operate on the original filtered list (originalData) so toggle-back restores reliably
-    let source = (originalData && originalData.length > 0) ? originalData.slice() : data.slice();
+    let list = source.slice();
 
     if (mode === 'known') {
-      // For known sorting, show the full list (including known items) so we can surface known items
-      source = (fullData && fullData.length > 0) ? fullData.slice() : source;
+      list = (fullData && fullData.length > 0) ? fullData.slice() : source.slice();
     }
 
-    if (!source || source.length === 0) return;
-
-    let sorted = source.slice();
     if (mode === 'starred') {
-      // starred items should appear first
-      sorted.sort((a, b) => {
+      const useStarred = typeof starredOverride !== 'undefined' ? starredOverride : starred;
+      list.sort((a, b) => {
         const aStar = useStarred.includes(a.PerformanceIndicator) ? 0 : 1;
         const bStar = useStarred.includes(b.PerformanceIndicator) ? 0 : 1;
         return aStar - bStar;
       });
     } else if (mode === 'known') {
-      // put known items first
-      sorted.sort((a, b) => {
+      list.sort((a, b) => {
         const aKnown = knownIndicators.includes(a.PerformanceIndicator) ? 0 : 1;
         const bKnown = knownIndicators.includes(b.PerformanceIndicator) ? 0 : 1;
         return aKnown - bKnown;
       });
     }
 
-    // update data and restore the current index to the same PI if possible
-    setData(sorted);
-    if (currentPI) {
-      const newIndex = sorted.findIndex(x => x.PerformanceIndicator === currentPI);
-      if (newIndex >= 0) setCurrentIndex(newIndex);
-    }
-  }, [starred, data, currentIndex, originalData, fullData, knownIndicators]);
+    return list;
+  }, [fullData, starred, knownIndicators]);
 
   // Helper: shuffle an array (Fisher-Yates)
   const shuffle = (arr) => {
@@ -102,7 +94,7 @@ if (storedUserRaw) {
 
   //https://decatest.redhawks.us/
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (sortModeValue) => {
     try {
       let known = [];
       let index = 0;
@@ -131,7 +123,7 @@ if (storedUserRaw) {
       const piRes = await axios.get("https://decatest.redhawks.us/api/PIs", {
         params: { event: eventCluster },
       });
-  
+
       const allIndicators = piRes.data;
 
       // include all indicators in the main deck (don't remove known ones)
@@ -142,10 +134,28 @@ if (storedUserRaw) {
       setFullData(allIndicators.slice());
       // originalData keeps the original ordering for restore
       setOriginalData(filtered.slice());
-      setData(filtered.slice());
 
       const startIndex = index < filtered.length ? index : 0;
-      setCurrentIndex(startIndex);
+      const initialDataSource = filtered.slice();
+      const currentPI = initialDataSource[startIndex]?.PerformanceIndicator;
+      let initialData = initialDataSource;
+      if (sortModeValue !== 'default') {
+        initialData = sortData(sortModeValue, initialDataSource);
+        if (currentPI) {
+          const nextIndex = initialData.findIndex(x => x.PerformanceIndicator === currentPI);
+          if (nextIndex >= 0) {
+            setCurrentIndex(nextIndex);
+          } else {
+            setCurrentIndex(0);
+          }
+        } else {
+          setCurrentIndex(0);
+        }
+      } else {
+        setCurrentIndex(startIndex);
+      }
+
+      setData(initialData);
 
       // initialize remaining random indices when in random mode
       if (randomCards && filtered.length > 0) {
@@ -159,7 +169,7 @@ if (storedUserRaw) {
     } catch (err) {
       console.error("Error loading practice data:", err);
     }
-  }, [user, eventCluster, randomCards]);
+  }, [user?.googleId, eventCluster, randomCards, sortData]);
 
   const handleNext = useCallback(async (event) => {
     event.stopPropagation();
@@ -274,7 +284,7 @@ if (storedUserRaw) {
   useEffect(() => {
     if (!isInitialized) return;
     console.log("eventCluster being used:", eventCluster);
-    fetchData();
+    fetchData(sortModeRef.current);
     // load starred items for this cluster from localStorage
     try {
       const key = `starred_${eventCluster}`;
@@ -284,11 +294,7 @@ if (storedUserRaw) {
     } catch (e) {
       setStarred([]);
     }
-    // apply any active sort after loading data
-    if (sortMode !== 'default' && data.length > 0) {
-      applySort(sortMode);
-    }
-  }, [eventCluster, randomCards, user?.googleId, isInitialized, fetchData, applySort, data.length, sortMode]);
+  }, [eventCluster, randomCards, user?.googleId, isInitialized, fetchData]);
 
   // Close popup for this session
   const [dontShowChecked, setDontShowChecked] = useState(false);
@@ -316,23 +322,6 @@ if (storedUserRaw) {
     }
     setShowPopup(false);
   };
-
-  // when originalData is loaded, re-apply sort if a mode is active
-  // restore or apply sort when sortMode changes
-  useEffect(() => {
-    if (sortMode === 'default') {
-      if (originalData && originalData.length > 0) {
-        const currentPI = data[currentIndex]?.PerformanceIndicator;
-        setData(originalData.slice());
-        if (currentPI) {
-          const newIndex = originalData.findIndex(x => x.PerformanceIndicator === currentPI);
-          if (newIndex >= 0) setCurrentIndex(newIndex);
-        }
-      }
-    } else {
-      applySort(sortMode);
-    }
-  }, [sortMode, applySort, currentIndex, data, originalData]);
 
   // Add keyboard navigation for arrow keys
   useEffect(() => {
@@ -463,7 +452,7 @@ if (storedUserRaw) {
       });
       
 
-    fetchData(); // Refresh data
+      await fetchData(sortMode); // Refresh data
     } catch (error) {
       console.error("Error adding to I_Know_This_Terms:", error);
     }
@@ -477,7 +466,10 @@ if (storedUserRaw) {
         const next = exists ? prev.filter(x => x !== pi) : [pi, ...prev];
         try { localStorage.setItem(key, JSON.stringify(next)); } catch (e) {}
         // reapply starred sort if active (use next as override)
-        if (sortMode === 'starred') applySort('starred', next);
+        if (sortMode === 'starred') {
+          const sorted = sortData('starred', data, next);
+          setData(sorted);
+        }
         return next;
       });
     } catch (err) {
@@ -488,6 +480,15 @@ if (storedUserRaw) {
   const handleSortToggle = (mode) => {
     const next = sortMode === mode ? 'default' : mode;
     setSortMode(next);
+
+    if (next === 'default') {
+      if (originalData && originalData.length > 0) {
+        setData(originalData.slice());
+      }
+    } else {
+      const sorted = sortData(next, originalData.length > 0 ? originalData : data);
+      setData(sorted);
+    }
   };
 
   return (
@@ -578,7 +579,7 @@ if (storedUserRaw) {
                   },
                 });
                 
-                await fetchData();
+                await fetchData(sortMode);
               } catch (error) {
                 console.error("Error resetting known cards:", error);
               }
