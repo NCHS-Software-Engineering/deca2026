@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import "./PracticeMode.css";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -17,6 +17,7 @@ const Practice = () => {
   const [showMeaning, setShowMeaning] = useState(false);
   const [randomCards, setRandomCards] = useState(false);
   const [remainingRandomIndices, setRemainingRandomIndices] = useState([]);
+  const [randomCycleCompleted, setRandomCycleCompleted] = useState(false);
   // store the index the user was on before enabling random mode so we can return to it
   const [savedIndexBeforeRandom, setSavedIndexBeforeRandom] = useState(null);
   const [startTime, setStartTime] = useState(Date.now());
@@ -49,7 +50,42 @@ if (storedUserRaw) {
 }
 
 
-  const applySort = useCallback((mode, starredOverride) => {
+  // Set the event-related metadata on mount
+  useEffect(() => {
+    const tempEventCluster =
+      location.state?.cluster || localStorage.getItem("deca_cluster") || "Marketing";
+    const tempEventData =
+      location.state?.name || localStorage.getItem("deca_headerName") || tempEventCluster;
+    const tempEventColor =
+      location.state?.color || localStorage.getItem("deca_color") || "var(--Primary)";
+
+    setEventData(tempEventData);
+    setEventColor(tempEventColor);
+    setEventCluster(tempEventCluster);
+    setIsInitialized(true);
+  }, [location.state]);
+  
+
+  useEffect(() => {
+    if (!isInitialized) return;
+    console.log("eventCluster being used:", eventCluster);
+    fetchData();
+    // load starred items for this cluster from localStorage
+    try {
+      const key = `starred_${eventCluster}`;
+      const raw = localStorage.getItem(key);
+      if (raw) setStarred(JSON.parse(raw));
+      else setStarred([]);
+    } catch (e) {
+      setStarred([]);
+    }
+    // apply any active sort after loading data
+    if (sortMode !== 'default' && data.length > 0) {
+      applySort(sortMode);
+    }
+  }, [eventCluster, randomCards, user?.googleId, isInitialized]);
+
+  const applySort = (mode, starredOverride) => {
     // if no source available, nothing to sort
     const useStarred = typeof starredOverride !== 'undefined' ? starredOverride : starred;
     // preserve current PI so we can restore currentIndex after sorting
@@ -88,7 +124,34 @@ if (storedUserRaw) {
       const newIndex = sorted.findIndex(x => x.PerformanceIndicator === currentPI);
       if (newIndex >= 0) setCurrentIndex(newIndex);
     }
-  }, [starred, data, currentIndex, originalData, fullData, knownIndicators]);
+  };
+
+  // Close popup for this session
+  const [dontShowChecked, setDontShowChecked] = useState(false);
+
+  // Initialize popup visibility from localStorage and restore checkbox state
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('practice_popup_dontshow');
+      if (saved === 'true') {
+        setShowPopup(false);
+        setDontShowChecked(true);
+      }
+    } catch (e) {
+      console.error('Error reading popup preference', e);
+    }
+  }, []);
+
+  const closePopup = () => {
+    try {
+      if (dontShowChecked) {
+        localStorage.setItem('practice_popup_dontshow', 'true');
+      }
+    } catch (e) {
+      console.error('Error saving popup preference', e);
+    }
+    setShowPopup(false);
+  };
 
   // Helper: shuffle an array (Fisher-Yates)
   const shuffle = (arr) => {
@@ -99,10 +162,11 @@ if (storedUserRaw) {
     }
     return a;
   };
+  
 
   //https://decatest.redhawks.us/
 
-  const fetchData = useCallback(async () => {
+  const fetchData = async () => {
     try {
       let known = [];
       let index = 0;
@@ -153,15 +217,57 @@ if (storedUserRaw) {
           // remove current startIndex so next random won't immediately repeat
           const remaining = shuffle(allIndices.filter(i => i !== startIndex));
         setRemainingRandomIndices(remaining);
+        setRandomCycleCompleted(false);
       } else {
         setRemainingRandomIndices([]);
+        setRandomCycleCompleted(false);
       }
     } catch (err) {
       console.error("Error loading practice data:", err);
     }
-  }, [user, eventCluster, randomCards]);
+  };
 
-  const handleNext = useCallback(async (event) => {
+  // when originalData is loaded, re-apply sort if a mode is active
+  // restore or apply sort when sortMode changes
+  useEffect(() => {
+    if (sortMode === 'default') {
+      if (originalData && originalData.length > 0) {
+        const currentPI = data[currentIndex]?.PerformanceIndicator;
+        setData(originalData.slice());
+        if (currentPI) {
+          const newIndex = originalData.findIndex(x => x.PerformanceIndicator === currentPI);
+          if (newIndex >= 0) setCurrentIndex(newIndex);
+        }
+      }
+    } else {
+      applySort(sortMode);
+    }
+  }, [sortMode]);
+
+  // Add keyboard navigation for arrow keys
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      // Don't trigger if user is typing in the search box
+      if (event.target.type === 'text' || event.target.tagName === 'INPUT') {
+        return;
+      }
+
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        handleNext(event);
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        handleBack(event);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [currentIndex, data, randomCards, knownIndicators, user?.googleId, startTime]);
+
+  const handleFlip = () => setShowMeaning(prev => !prev);
+
+  const handleNext = async (event) => {
     event.stopPropagation();
     const timeSpent = (Date.now() - startTime) / 1000;
 
@@ -211,6 +317,7 @@ if (storedUserRaw) {
         // if only one card exists, allow it
         if (refill.length === 0 && allIndices.length > 0) refill = [currentIndex];
         remaining = refill;
+        setRandomCycleCompleted(true);
       }
 
       // pop next from front
@@ -224,9 +331,9 @@ if (storedUserRaw) {
     setCurrentIndex(nextIndex < data.length ? nextIndex : 0);
     setShowMeaning(false);
     setStartTime(Date.now());
-  }, [startTime, user, currentIndex, eventCluster, randomCards, remainingRandomIndices, data]);
+  };
 
-  const handleBack = useCallback(async (event) => {
+  const handleBack = async (event) => {
     event.stopPropagation();
     let prevIndex = currentIndex - 1;
     if (prevIndex < 0) prevIndex = data.length - 1;
@@ -253,109 +360,7 @@ if (storedUserRaw) {
       setShowMeaning(false);
       setStartTime(Date.now());
     }
-  }, [currentIndex, data, user, eventCluster]);
-
-  // Set the event-related metadata on mount
-  useEffect(() => {
-    const tempEventCluster =
-      location.state?.cluster || localStorage.getItem("deca_cluster") || "Marketing";
-    const tempEventData =
-      location.state?.name || localStorage.getItem("deca_headerName") || tempEventCluster;
-    const tempEventColor =
-      location.state?.color || localStorage.getItem("deca_color") || "var(--Primary)";
-
-    setEventData(tempEventData);
-    setEventColor(tempEventColor);
-    setEventCluster(tempEventCluster);
-    setIsInitialized(true);
-  }, [location.state]);
-  
-
-  useEffect(() => {
-    if (!isInitialized) return;
-    console.log("eventCluster being used:", eventCluster);
-    fetchData();
-    // load starred items for this cluster from localStorage
-    try {
-      const key = `starred_${eventCluster}`;
-      const raw = localStorage.getItem(key);
-      if (raw) setStarred(JSON.parse(raw));
-      else setStarred([]);
-    } catch (e) {
-      setStarred([]);
-    }
-    // apply any active sort after loading data
-    if (sortMode !== 'default' && data.length > 0) {
-      applySort(sortMode);
-    }
-  }, [eventCluster, randomCards, user?.googleId, isInitialized, fetchData, applySort, data.length, sortMode]);
-
-  // Close popup for this session
-  const [dontShowChecked, setDontShowChecked] = useState(false);
-
-  // Initialize popup visibility from localStorage and restore checkbox state
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('practice_popup_dontshow');
-      if (saved === 'true') {
-        setShowPopup(false);
-        setDontShowChecked(true);
-      }
-    } catch (e) {
-      console.error('Error reading popup preference', e);
-    }
-  }, []);
-
-  const closePopup = () => {
-    try {
-      if (dontShowChecked) {
-        localStorage.setItem('practice_popup_dontshow', 'true');
-      }
-    } catch (e) {
-      console.error('Error saving popup preference', e);
-    }
-    setShowPopup(false);
   };
-
-  // when originalData is loaded, re-apply sort if a mode is active
-  // restore or apply sort when sortMode changes
-  useEffect(() => {
-    if (sortMode === 'default') {
-      if (originalData && originalData.length > 0) {
-        const currentPI = data[currentIndex]?.PerformanceIndicator;
-        setData(originalData.slice());
-        if (currentPI) {
-          const newIndex = originalData.findIndex(x => x.PerformanceIndicator === currentPI);
-          if (newIndex >= 0) setCurrentIndex(newIndex);
-        }
-      }
-    } else {
-      applySort(sortMode);
-    }
-  }, [sortMode, applySort, currentIndex, data, originalData]);
-
-  // Add keyboard navigation for arrow keys
-  useEffect(() => {
-    const handleKeyPress = (event) => {
-      // Don't trigger if user is typing in the search box
-      if (event.target.type === 'text' || event.target.tagName === 'INPUT') {
-        return;
-      }
-
-      if (event.key === 'ArrowRight') {
-        event.preventDefault();
-        handleNext(event);
-      } else if (event.key === 'ArrowLeft') {
-        event.preventDefault();
-        handleBack(event);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [currentIndex, data, randomCards, knownIndicators, user?.googleId, startTime, handleBack, handleNext]);
-
-  const handleFlip = () => setShowMeaning(prev => !prev);
 
   const handleRestart = (event) => {
     event.stopPropagation();
@@ -367,6 +372,7 @@ if (storedUserRaw) {
       const allIndices = data.map((_, i) => i);
       const remaining = shuffle(allIndices.filter(i => i !== 0));
       setRemainingRandomIndices(remaining);
+      setRandomCycleCompleted(false);
     }
   };
 
@@ -381,6 +387,7 @@ if (storedUserRaw) {
         const allIndices = data.map((_, i) => i);
         const remaining = shuffle(allIndices.filter(i => i !== currentIndex));
         setRemainingRandomIndices(remaining);
+        setRandomCycleCompleted(false);
       } else {
         // turning OFF random: restore the saved index (if valid)
         const restoreIndex =
@@ -393,6 +400,7 @@ if (storedUserRaw) {
         setStartTime(Date.now());
         setSavedIndexBeforeRandom(null);
         setRemainingRandomIndices([]);
+        setRandomCycleCompleted(false);
 
         // persist restored index for logged-in users (matches Next/Back behavior)
         if (user?.googleId) {
@@ -463,7 +471,7 @@ if (storedUserRaw) {
       });
       
 
-    fetchData(); // Refresh data
+      fetchData(); // Refresh data
     } catch (error) {
       console.error("Error adding to I_Know_This_Terms:", error);
     }

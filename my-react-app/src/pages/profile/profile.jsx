@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
+import { getRoleFeatures, getRoleDisplayName, ROLES } from '../../utils/roleUtils';
 import './profile.css';
 import ProfileImageFile from '../../images/ProfileImageFile.webp';
 
@@ -197,7 +198,13 @@ function Profile() {
       const userObject = jwtDecode(response.credential);
 
       // Determine role based on email domain
-      // role determination removed as not used
+      let role = "student";
+      if (
+        userObject.email.endsWith("@naperville203.org") &&
+        !userObject.email.endsWith("@stu.naperville203.org")
+      ) {
+        role = "teacher";
+      }
 
       // Send user data + role to backend
       const res = await axios.post('https://decatest.redhawks.us/api/login', {
@@ -295,7 +302,7 @@ function Profile() {
     }
   };
 
-  const drawCropPreview = useCallback((canvas, image) => {
+  const drawCropPreview = (canvas, image) => {
     if (!canvas || !image) {
       return;
     }
@@ -327,7 +334,7 @@ function Profile() {
       scaledHeight
     );
     context.restore();
-  }, [imageScale, imagePosition]);
+  };
 
   useEffect(() => {
     if (!tempImage) {
@@ -345,7 +352,7 @@ function Profile() {
     return () => {
       image.onload = null;
     };
-  }, [tempImage, drawCropPreview]);
+  }, [tempImage]);
 
   useEffect(() => {
     if (!showCropper || !cropImageRef.current) {
@@ -353,7 +360,7 @@ function Profile() {
     }
 
     drawCropPreview(cropPreviewCanvasRef.current, cropImageRef.current);
-  }, [showCropper, imagePosition, imageScale, drawCropPreview]);
+  }, [showCropper, imagePosition, imageScale]);
 
   const saveCroppedImage = () => {
     const canvas = cropPreviewCanvasRef.current;

@@ -1,8 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import MenuItems from "./MenuItems";
 
 const Navbar = () => {
+  const [user, setUser] = useState(null);
   const depthLevel = 0;
+
+  useEffect(() => {
+    // Retrieve user from localStorage when component mounts
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
 
   // Dynamic menu items with conditional edit tab
   const getMenuItemsData = () => {
