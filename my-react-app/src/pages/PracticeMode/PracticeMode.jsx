@@ -3,6 +3,9 @@ import axios from 'axios';
 import "./PracticeMode.css";
 import { useLocation, useNavigate } from "react-router-dom";
 
+const API_BASE = process.env.REACT_APP_API_BASE_URL || "";
+const apiUrl = (path) => `${API_BASE}${path}`;
+
 const Practice = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -95,8 +98,7 @@ if (storedUserRaw) {
     let source = (originalData && originalData.length > 0) ? originalData.slice() : data.slice();
 
     if (mode === 'known') {
-      // For known sorting, show the full list (including known items) so we can surface known items
-      source = (fullData && fullData.length > 0) ? fullData.slice() : source;
+      source = (originalData && originalData.length > 0) ? originalData.slice() : source;
     }
 
     if (!source || source.length === 0) return;
@@ -172,14 +174,14 @@ if (storedUserRaw) {
       let index = 0;
   
       if (user?.googleId) {
-        const knownRes = await axios.get("https://decatest.redhawks.us/api/know-this", {
+        const knownRes = await axios.get(apiUrl("/api/know-this"), {
           params: {
             googleId: user.googleId,
             careerCluster: eventCluster,
           },
         });
   
-        const indexRes = await axios.get("https://decatest.redhawks.us/api/last-index", {
+        const indexRes = await axios.get(apiUrl("/api/last-index"), {
           params: { googleId: user.googleId, careerCluster: eventCluster },
         });
   
@@ -192,16 +194,17 @@ if (storedUserRaw) {
         setKnownIndicators([]);
       }
   
-      const piRes = await axios.get("https://decatest.redhawks.us/api/PIs", {
+      const piRes = await axios.get(apiUrl("/api/PIs"), {
         params: { event: eventCluster },
       });
   
       const allIndicators = piRes.data;
 
-      // include all indicators in the main deck (don't remove known ones)
-      const filtered = allIndicators;
+      const filtered = allIndicators.filter(
+        (item) => !known.includes(item.PerformanceIndicator)
+      );
 
-      console.log("Loaded data (including known):", filtered);
+      console.log("Loaded visible data (known removed):", filtered);
       // fullData keeps the full set
       setFullData(allIndicators.slice());
       // originalData keeps the original ordering for restore
@@ -273,7 +276,7 @@ if (storedUserRaw) {
 
     if (timeSpent >= 5 && user?.googleId) {
       try {
-        await fetch("https://decatest.redhawks.us/api/update-stats", {
+        await fetch(apiUrl("/api/update-stats"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -289,7 +292,7 @@ if (storedUserRaw) {
     
     if (user?.googleId) {
       try {
-         await fetch("https://decatest.redhawks.us/api/last-index", { 
+         await fetch(apiUrl("/api/last-index"), { 
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -340,7 +343,7 @@ if (storedUserRaw) {
 
     if (user?.googleId) {
       try {
-         await fetch("https://decatest.redhawks.us/api/last-index", { 
+         await fetch(apiUrl("/api/last-index"), { 
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -405,7 +408,7 @@ if (storedUserRaw) {
         // persist restored index for logged-in users (matches Next/Back behavior)
         if (user?.googleId) {
           try {
-            fetch("https://decatest.redhawks.us/api/last-index", {
+            fetch(apiUrl("/api/last-index"), {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -460,7 +463,7 @@ if (storedUserRaw) {
     }
 
     try {
-      await fetch("https://decatest.redhawks.us/api/know-this", {
+      await fetch(apiUrl("/api/know-this"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -579,10 +582,10 @@ if (storedUserRaw) {
             onClick={async (e) => {
               e.stopPropagation();
               try {
-                await axios.delete("https://decatest.redhawks.us/api/know-this", {
+                await axios.delete(apiUrl("/api/know-this"), {
                   params: {
                     googleId: user.googleId,
-                    cluster: eventCluster, // <--- optional for scoped deletion
+                    careerCluster: eventCluster,
                   },
                 });
                 
@@ -596,7 +599,7 @@ if (storedUserRaw) {
           </button>
         )}
 
-        {user && (
+        {user && data.length > 0 && (
           <button
             className="know-button"
             onClick={(e) => {
@@ -656,6 +659,17 @@ if (storedUserRaw) {
                 </button>
               )}
             </div>
+          </div>
+        )}
+
+        {data.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '24px 12px' }}>
+            <h2>No visible flashcards right now.</h2>
+            {hasKnown ? (
+              <p>Use <strong>Return Known Cards</strong> to bring them back.</p>
+            ) : (
+              <p>No flashcards available for this cluster yet.</p>
+            )}
           </div>
         )}
       </div>

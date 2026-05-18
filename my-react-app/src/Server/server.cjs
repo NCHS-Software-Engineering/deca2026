@@ -42,6 +42,17 @@ export default pool;
     `;
     await connection.query(createReportsTableSql);
 
+    const createKnownTermsTableSql = `
+      CREATE TABLE IF NOT EXISTS I_Know_This_Terms (
+        GoogleId VARCHAR(255) NOT NULL,
+        PerformanceIndicator TEXT NOT NULL,
+        Career_Cluster VARCHAR(255) NOT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_known_term (GoogleId, Career_Cluster, PerformanceIndicator(255))
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `;
+    await connection.query(createKnownTermsTableSql);
+
     connection.release();
   } catch (err) {
     console.error("❌ Failed to connect to the database:", err);
@@ -134,6 +145,8 @@ app.post('/api/know-this', async (req, res) => {
     const sql = `
       INSERT INTO I_Know_This_Terms (GoogleId, PerformanceIndicator, Career_Cluster)
       VALUES (?, ?, ?)
+      ON DUPLICATE KEY UPDATE
+        PerformanceIndicator = VALUES(PerformanceIndicator)
     `;
     const [result] = await pool.query(sql, [GoogleId, PerformanceIndicator, CareerCluster]);
     console.log("✅ Inserted into I_Know_This_Terms:", result.insertId);
@@ -161,13 +174,19 @@ app.get('/api/know-this', async (req, res) => {
 });
 
 app.delete('/api/know-this', async (req, res) => {
-  const { googleId } = req.query;
+  const { googleId, careerCluster, cluster } = req.query;
+  const selectedCluster = careerCluster || cluster;
   if (!googleId) {
     return res.status(400).json({ error: 'Missing googleId' });
   }
   try {
-    const sql = `DELETE FROM I_Know_This_Terms WHERE GoogleId = ?`;
-    const [result] = await pool.query(sql, [googleId]);
+    let sql = `DELETE FROM I_Know_This_Terms WHERE GoogleId = ?`;
+    const params = [googleId];
+    if (selectedCluster) {
+      sql += ` AND Career_Cluster = ?`;
+      params.push(selectedCluster);
+    }
+    const [result] = await pool.query(sql, params);
     res.status(200).json({ message: "Known terms reset successfully" });
   } catch (err) {
     console.error("Error deleting known terms:", err);
