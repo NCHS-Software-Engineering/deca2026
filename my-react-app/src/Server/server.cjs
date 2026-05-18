@@ -148,9 +148,17 @@ app.post('/api/know-this', async (req, res) => {
       ON DUPLICATE KEY UPDATE
         PerformanceIndicator = VALUES(PerformanceIndicator)
     `;
-    const [result] = await pool.query(sql, [GoogleId, PerformanceIndicator, CareerCluster]);
-    console.log("✅ Inserted into I_Know_This_Terms:", result.insertId);
-    res.status(200).json({ message: "Successfully added" });
+    await pool.query(sql, [GoogleId, PerformanceIndicator, CareerCluster]);
+
+    const countSql = `
+      SELECT COUNT(*) AS knownCount
+      FROM I_Know_This_Terms
+      WHERE GoogleId = ? AND Career_Cluster = ?
+    `;
+    const [countRows] = await pool.query(countSql, [GoogleId, CareerCluster]);
+    const knownCount = Number(countRows[0]?.knownCount || 0);
+
+    res.status(200).json({ message: "Successfully added", knownCount });
   } catch (err) {
     console.error("Error inserting into I_Know_This_Terms:", err);
     res.status(500).json({ error: "Database error" });
@@ -174,8 +182,9 @@ app.get('/api/know-this', async (req, res) => {
 });
 
 app.delete('/api/know-this', async (req, res) => {
-  const { googleId, careerCluster, cluster } = req.query;
+  const { googleId, careerCluster, cluster, performanceIndicator, pi } = req.query;
   const selectedCluster = careerCluster || cluster;
+  const selectedIndicator = performanceIndicator || pi;
   if (!googleId) {
     return res.status(400).json({ error: 'Missing googleId' });
   }
@@ -186,8 +195,36 @@ app.delete('/api/know-this', async (req, res) => {
       sql += ` AND Career_Cluster = ?`;
       params.push(selectedCluster);
     }
+    if (selectedIndicator) {
+      sql += ` AND PerformanceIndicator = ?`;
+      params.push(selectedIndicator);
+    }
     const [result] = await pool.query(sql, params);
-    res.status(200).json({ message: "Known terms reset successfully" });
+
+    let knownCount = 0;
+    if (selectedCluster) {
+      const countSql = `
+        SELECT COUNT(*) AS knownCount
+        FROM I_Know_This_Terms
+        WHERE GoogleId = ? AND Career_Cluster = ?
+      `;
+      const [countRows] = await pool.query(countSql, [googleId, selectedCluster]);
+      knownCount = Number(countRows[0]?.knownCount || 0);
+    } else {
+      const countSql = `
+        SELECT COUNT(*) AS knownCount
+        FROM I_Know_This_Terms
+        WHERE GoogleId = ?
+      `;
+      const [countRows] = await pool.query(countSql, [googleId]);
+      knownCount = Number(countRows[0]?.knownCount || 0);
+    }
+
+    res.status(200).json({
+      message: "Known terms reset successfully",
+      deletedRows: result.affectedRows,
+      knownCount,
+    });
   } catch (err) {
     console.error("Error deleting known terms:", err);
     res.status(500).json({ error: "Database error" });
