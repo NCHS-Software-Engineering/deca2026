@@ -11,7 +11,7 @@ app.use(express.json());
 const mysql = require('mysql2/promise');
 const pool = mysql.createPool({
   host: process.env.Host,
-  user: process.env.Username, 
+  user: process.env.User, 
   password: process.env.Password,
   database: 'deca',
   waitForConnections: true,
@@ -527,6 +527,6 @@ app.get('*', (req, res) => {
 
 
 
-app.listen(3000, () => {
+app.listen(4000, () => {
   console.log(`Server is running on port 3000.`);
 });
