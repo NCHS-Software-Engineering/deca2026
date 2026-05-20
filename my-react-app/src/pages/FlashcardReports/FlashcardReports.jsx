@@ -154,7 +154,7 @@ const FlashcardReports = () => {
     const fetchFlashcards = async () => {
       setLoadingCards(true);
       try {
-        const res = await fetch(`https://decatest.redhawks.us/api/PIs?event=${encodeURIComponent(cluster)}`);
+        const res = await fetch(`https://deca.redhawks.us/api/PIs?event=${encodeURIComponent(cluster)}`);
         if (!res.ok) throw new Error("Failed to load flashcards");
         const data = await res.json();
         const normalized = Array.isArray(data) ? data : [];

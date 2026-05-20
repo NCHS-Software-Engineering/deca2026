@@ -60,4 +60,9 @@ Users: Stores all of the user data in the database, the data is set when the use
 
 ****NOTE: To give someone edit access you need to put teacher_override in the privileges column of the user table
 
-Know Issues: The server crashes on the official server after an unknown amount of time.
+Known Issues: 
+The colors on the stats page are different depending on what device it's being displayed on.
+
+
+Solved Issues: 
+The server crashes on the official server after an unknown amount of time.

@@ -6,6 +6,9 @@ import { getRoleFeatures, getRoleDisplayName, ROLES } from '../../utils/roleUtil
 import './profile.css';
 import ProfileImageFile from '../../images/ProfileImageFile.webp';
 
+const API_BASE = process.env.REACT_APP_API_BASE_URL || "";
+const apiUrl = (path) => `${API_BASE}${path}`;
+
 const ROLEPLAY_CLUSTERS = {
   'Principles of Business Administration Events': [
     'Principles of Business Management and Administration (PBM)',
@@ -207,7 +210,7 @@ function Profile() {
       }
 
       // Send user data + role to backend
-      const res = await axios.post('https://decatest.redhawks.us/api/login', {
+      const res = await axios.post(apiUrl('/api/login'), {
         googleId: userObject.sub,
         name: userObject.name,
         email: userObject.email,

@@ -76,7 +76,7 @@ const SearchBar = () => {
 
       const flashcardResponses = await Promise.allSettled(
         clusterPages.map(async (cluster) => {
-          const response = await axios.get("https://decatest.redhawks.us/api/PIs", {
+          const response = await axios.get("https://deca.redhawks.us/api/PIs", {
             params: { event: cluster.cluster },
           });
 

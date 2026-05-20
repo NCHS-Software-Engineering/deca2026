@@ -14,7 +14,7 @@ const OldPractice = () => {
   };
 
   useEffect(() => {
-    fetch('https://decatest.redhawks.us/api/branches')
+    fetch('https://deca.redhawks.us/api/branches')
       .then((res) => res.json())
       .then((data) => {
         setBranches(data);
@@ -29,7 +29,7 @@ const OldPractice = () => {
   }, [selected]);
 
   const fetchPIs = (branchNum) => {
-    fetch('https://decatest.redhawks.us/api/PIs', {
+    fetch('https://deca.redhawks.us/api/PIs', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

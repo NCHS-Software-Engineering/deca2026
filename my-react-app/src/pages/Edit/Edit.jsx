@@ -22,7 +22,7 @@ const Edit = () => {
 
   const fetchPassword = async () => {
     try {
-      const res = await fetch("https://decatest.redhawks.us/api/password");
+      const res = await fetch("https://deca.redhawks.us/api/password");
       const data = await res.json();
       setCurrentPassword(data.password);
     } catch (err) {
@@ -35,7 +35,7 @@ const Edit = () => {
   const togglePasswordEditor = async () => {
     if (!showPasswordEditor) {
       try {
-        const res = await fetch("https://decatest.redhawks.us/api/password");
+        const res = await fetch("https://deca.redhawks.us/api/password");
         const data = await res.json();
         setCurrentPassword(data.password);
       } catch (err) {
@@ -48,7 +48,7 @@ const Edit = () => {
   const handlePasswordUpdate = async () => {
     if (!newPassword.trim()) return alert("New password cannot be empty.");
     try {
-      const res = await fetch("https://decatest.redhawks.us/api/password", {
+      const res = await fetch("https://deca.redhawks.us/api/password", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ newPassword })
@@ -112,7 +112,7 @@ const Edit = () => {
     if (!filtered.length) return alert("Please enter at least one valid performance indicator.");
     const formattedCluster = expandedBox.charAt(0).toUpperCase() + expandedBox.slice(1);
     try {
-      const res = await fetch('https://decatest.redhawks.us/api/PIs', {
+      const res = await fetch('https://deca.redhawks.us/api/PIs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pis: filtered, careerCluster: formattedCluster })
@@ -131,7 +131,7 @@ const Edit = () => {
   const handleFetchEditPIs = async () => {
     try {
       const formattedCluster = expandedBox.charAt(0).toUpperCase() + expandedBox.slice(1);
-      const response = await fetch(`https://decatest.redhawks.us/api/PIs?event=${encodeURIComponent(formattedCluster)}`);
+      const response = await fetch(`https://deca.redhawks.us/api/PIs?event=${encodeURIComponent(formattedCluster)}`);
       const data = await response.json();
   
       const formatted = data.map(({ PerformanceIndicator, Meaning }) => ({
@@ -159,7 +159,7 @@ const Edit = () => {
     if (!changed.length) return alert("No changes made.");
   
     try {
-      const res = await fetch('https://decatest.redhawks.us/api/PIs/update', {
+      const res = await fetch('https://deca.redhawks.us/api/PIs/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pis: changed, careerCluster: formattedCluster })

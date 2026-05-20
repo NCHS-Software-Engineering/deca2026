@@ -68,7 +68,7 @@ function Home() {
 
     const fetchPassword = async () => {
       try {
-        const res = await axios.get("https://decatest.redhawks.us/api/password");
+        const res = await axios.get("https://deca.redhawks.us/api/password");
         setCorrectPassword(res.data.password);
         console.log("Fetched password from DB:", res.data.password);
       } catch (err) {
