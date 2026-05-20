@@ -513,6 +513,8 @@ app.patch('/api/flashcard-reports/:id', async (req, res) => {
   }
 });
 
+const path = require('path');
+
 
 
 // Serve React build
